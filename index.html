@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Clínica AltaVet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#inicio" aria-label="Clínica AltaVet">
+        <span class="brand-mark">A</span>
+        <span>AltaVet</span>
+      </a>
+      <nav class="nav" aria-label="Navegação principal">
+        <a href="#agenda">Agenda</a>
+        <a href="#cadastros">Cadastros</a>
+        <a href="#pacientes">Pacientes</a>
+        <a href="#usuarios">Usuários</a>
+        <button class="nav-button" type="button" id="logoutButton">Sair</button>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" id="inicio">
+        <img src="assets/clinica-hero.png" alt="Recepção de clínica veterinária com veterinária, cão e gato" />
+        <div class="hero-overlay">
+          <p class="eyebrow">Clínica Veterinária</p>
+          <h1>AltaVet</h1>
+          <p class="hero-copy">Gestão de tutores, pets e atendimentos em uma rotina clara para banho e tosa, consultas, vacinas e cirurgias.</p>
+          <div class="hero-actions">
+            <a class="primary-link" href="#agenda">Abrir agenda</a>
+            <a class="secondary-link" href="#cadastros">Cadastrar cliente</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="summary-band" aria-label="Resumo da clínica">
+        <div class="metric">
+          <strong id="totalClientes">0</strong>
+          <span>clientes</span>
+        </div>
+        <div class="metric">
+          <strong id="totalPets">0</strong>
+          <span>pets</span>
+        </div>
+        <div class="metric">
+          <strong id="totalAgendados">0</strong>
+          <span>agendados</span>
+        </div>
+        <div class="metric">
+          <strong id="totalCancelados">0</strong>
+          <span>desmarcados</span>
+        </div>
+      </section>
+
+      <section class="workspace" id="agenda">
+        <div class="section-heading">
+          <p class="eyebrow">Atendimentos</p>
+          <h2>Agenda</h2>
+        </div>
+
+        <div class="app-grid">
+          <form class="panel form-panel" id="appointmentForm">
+            <div class="panel-head">
+              <h3>Novo agendamento</h3>
+              <span class="pill">agenda</span>
+            </div>
+
+            <label>
+              Pet
+              <select id="appointmentPet" required></select>
+            </label>
+
+            <div class="field-row">
+              <label>
+                Serviço
+                <select id="appointmentType" required>
+                  <option value="Banho e tosa">Banho e tosa</option>
+                  <option value="Consulta">Consulta</option>
+                  <option value="Vacina">Vacina</option>
+                  <option value="Cirurgia">Cirurgia</option>
+                </select>
+              </label>
+              <label>
+                Data
+                <input id="appointmentDate" type="date" required />
+              </label>
+            </div>
+
+            <div class="field-row">
+              <label>
+                Horário
+                <input id="appointmentTime" type="time" required />
+              </label>
+              <label>
+                Profissional
+                <input id="appointmentProfessional" type="text" placeholder="Luiz Wagner Krieger Amorim" />
+              </label>
+            </div>
+
+            <label>
+              Observações
+              <textarea id="appointmentNotes" rows="3" placeholder="Ex.: vacina V10, retorno pós-cirúrgico, tosa higiênica"></textarea>
+            </label>
+
+            <button class="primary-button" type="submit">Marcar atendimento</button>
+          </form>
+
+          <div class="panel list-panel">
+            <div class="panel-head">
+              <h3>Próximos horários</h3>
+              <div class="segmented" role="tablist" aria-label="Filtro de agenda">
+                <button class="is-active" type="button" data-filter="ativos">Ativos</button>
+                <button type="button" data-filter="todos">Todos</button>
+              </div>
+            </div>
+            <div class="appointments" id="appointmentsList"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="workspace alt" id="cadastros">
+        <div class="section-heading">
+          <p class="eyebrow">Tutores e pacientes</p>
+          <h2>Cadastros</h2>
+        </div>
+
+        <div class="app-grid">
+          <form class="panel form-panel" id="clientForm">
+            <div class="panel-head">
+              <h3>Cadastrar cliente</h3>
+              <span class="pill coral">tutor</span>
+            </div>
+
+            <label>
+              Nome do tutor
+              <input id="clientName" type="text" required placeholder="Nome completo" />
+            </label>
+
+            <div class="field-row">
+              <label>
+                Telefone
+                <input id="clientPhone" type="tel" required placeholder="(00) 00000-0000" />
+              </label>
+              <label>
+                E-mail
+                <input id="clientEmail" type="email" placeholder="cliente@email.com" />
+              </label>
+            </div>
+
+            <label>
+              Endereço
+              <input id="clientAddress" type="text" placeholder="Rua, número, bairro" />
+            </label>
+
+            <button class="primary-button" type="submit">Salvar cliente</button>
+          </form>
+
+          <form class="panel form-panel" id="petForm">
+            <div class="panel-head">
+              <h3>Cadastrar pet</h3>
+              <span class="pill green">paciente</span>
+            </div>
+
+            <label>
+              Tutor
+              <select id="petOwner" required></select>
+            </label>
+
+            <div class="field-row">
+              <label>
+                Nome do pet
+                <input id="petName" type="text" required placeholder="Nome" />
+              </label>
+              <label>
+                Espécie
+                <select id="petSpecies" required>
+                  <option value="Cão">Cão</option>
+                  <option value="Gato">Gato</option>
+                  <option value="Ave">Ave</option>
+                  <option value="Outro">Outro</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="field-row">
+              <label>
+                Raça
+                <input id="petBreed" type="text" placeholder="SRD, Poodle, Persa..." />
+              </label>
+              <label>
+                Idade
+                <input id="petAge" type="number" min="0" max="80" placeholder="0" />
+              </label>
+            </div>
+
+            <label>
+              Observações clínicas
+              <textarea id="petNotes" rows="3" placeholder="Alergias, medicações, comportamento"></textarea>
+            </label>
+
+            <button class="primary-button" type="submit">Salvar pet</button>
+          </form>
+        </div>
+      </section>
+
+      <section class="workspace" id="pacientes">
+        <div class="section-heading">
+          <p class="eyebrow">Relacionamentos</p>
+          <h2>Clientes e pets vinculados</h2>
+        </div>
+        <div class="directory" id="directoryList"></div>
+      </section>
+
+      <section class="workspace alt" id="usuarios">
+        <div class="section-heading">
+          <p class="eyebrow">Acesso seguro</p>
+          <h2>Usuários</h2>
+        </div>
+
+        <div class="app-grid">
+          <form class="panel form-panel" id="userForm">
+            <div class="panel-head">
+              <h3>Criar usuário</h3>
+              <span class="pill">MFA</span>
+            </div>
+
+            <label>
+              Usuário
+              <input id="newUsername" type="text" required autocomplete="off" placeholder="ex.: recepcao" />
+            </label>
+
+            <label>
+              Senha temporária
+              <input id="newUserPassword" type="password" required minlength="8" autocomplete="new-password" placeholder="mínimo 8 caracteres" />
+            </label>
+
+            <p class="form-note">No primeiro login, esse usuário deverá escanear o QR Code em um aplicativo Authenticator.</p>
+
+            <button class="primary-button" type="submit">Criar usuário</button>
+          </form>
+
+          <div class="panel list-panel">
+            <div class="panel-head">
+              <h3>Usuários cadastrados</h3>
+              <span class="pill green">acesso</span>
+            </div>
+            <div class="users-list" id="usersList"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

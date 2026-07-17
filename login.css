@@ -1,0 +1,75 @@
+.login-page {
+  min-height: 100vh;
+  background:
+    linear-gradient(90deg, rgba(12, 27, 33, 0.82), rgba(12, 27, 33, 0.4)),
+    url("assets/clinica-hero.png") center / cover no-repeat;
+}
+
+.login-shell {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 24px;
+}
+
+.login-panel {
+  width: min(460px, 100%);
+  padding: 28px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(217, 226, 229, 0.9);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.login-brand {
+  margin-bottom: 24px;
+}
+
+.login-form {
+  display: grid;
+  gap: 16px;
+}
+
+.login-form h1 {
+  margin: 0 0 4px;
+  font-size: 2rem;
+  letter-spacing: 0;
+}
+
+.hidden {
+  display: none;
+}
+
+.mfa-setup {
+  display: grid;
+  gap: 12px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.mfa-setup.hidden {
+  display: none;
+}
+
+.qr-box {
+  display: grid;
+  min-height: 220px;
+  place-items: center;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.qr-box svg,
+.qr-box img {
+  width: min(220px, 100%);
+  height: auto;
+}
+
+.login-message {
+  min-height: 22px;
+  margin: 16px 0 0;
+  color: var(--coral);
+  font-weight: 800;
+}
