@@ -567,7 +567,7 @@ function renderPatientCard(pet) {
               ${pet.notes ? `<p class="card-meta">${escapeHtml(pet.notes)}</p>` : ""}
             </div>
             <div class="card-actions patient-actions">
-              <button class="primary-button compact-button" type="button" data-action="view-pet-history" data-pet-id="${pet.id}">Ver histÃ³rico</button>
+              <button class="primary-button compact-button" type="button" data-action="view-pet-history" data-pet-id="${pet.id}">Ver histórico</button>
               <button class="ghost-button" type="button" data-action="edit-pet" data-pet-id="${pet.id}">Editar pet</button>
               <button class="danger-button" type="button" data-action="delete-pet" data-pet-id="${pet.id}">Excluir pet</button>
             </div>
