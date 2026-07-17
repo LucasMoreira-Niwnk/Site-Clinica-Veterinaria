@@ -516,7 +516,7 @@ class AltaVetHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         parsed = urlparse(self.path)
 
-        if parsed.path == "/login":
+        if parsed.path in {"/login", "/login/"}:
             self.serve_static("login.html")
             return
 
