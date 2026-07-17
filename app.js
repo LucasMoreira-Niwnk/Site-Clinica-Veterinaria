@@ -264,7 +264,7 @@ async function init() {
     await refreshState();
   } catch {
     render();
-    showToast("Backend indisponivel. Verifique o servidor.");
+    showToast("Backend indisponível. Verifique o servidor.");
   } finally {
     setFormsDisabled(false);
   }
@@ -406,10 +406,10 @@ function renderAppointments() {
         <div class="card-top">
           <div>
             <h4 class="card-title">${escapeHtml(appointment.type)} - ${escapeHtml(pet?.name || "Pet removido")}</h4>
-            <p class="card-meta">${formatDate(appointment.date)} as ${escapeHtml(appointment.time)} - ${escapeHtml(owner?.name || "Tutor nao encontrado")}</p>
+            <p class="card-meta">${formatDate(appointment.date)} às ${escapeHtml(appointment.time)} - ${escapeHtml(owner?.name || "Tutor não encontrado")}</p>
             <p class="card-meta">${escapeHtml(appointment.professional || "Profissional a definir")}</p>
           </div>
-          <span class="status ${appointment.status}">${appointment.status}</span>
+          <span class="status ${appointment.status}">${formatAppointmentStatus(appointment.status)}</span>
         </div>
         ${appointment.notes ? `<p class="card-meta">${escapeHtml(appointment.notes)}</p>` : ""}
         <div class="card-actions">
@@ -434,7 +434,7 @@ function renderDirectory() {
 
   const start = (patientPage - 1) * petsPerPage;
   const pagePets = filteredPets.slice(start, start + petsPerPage);
-  els.patientCount.textContent = `${filteredPets.length} pet${filteredPets.length === 1 ? "" : "s"}`;
+  els.patientCount.textContent = `${filteredPets.length} ${filteredPets.length === 1 ? "Pet" : "Pets"}`;
 
   if (!state.pets.length) {
     els.directoryList.innerHTML = `<div class="empty">Cadastre pets para montar a lista de pacientes.</div>`;
@@ -573,7 +573,7 @@ function renderPetHistory(pet) {
     <div class="pet-history">
       <div class="pet-history-head">
         <span class="pet-chip">${escapeHtml(pet.name)} - ${escapeHtml(pet.species)}</span>
-        <span class="history-count">${history.length} atendimento${history.length === 1 ? "" : "s"}</span>
+        <span class="history-count">${history.length} ${history.length === 1 ? "Atendimento" : "Atendimentos"}</span>
       </div>
       ${
         history.length
@@ -581,7 +581,7 @@ function renderPetHistory(pet) {
               ${history.slice(0, 5).map((appointment) => `
                 <li>
                   <strong>${escapeHtml(appointment.type)}</strong>
-                  <span>${formatDate(appointment.date)} as ${escapeHtml(appointment.time)} - ${escapeHtml(appointment.status)}</span>
+                  <span>${formatDate(appointment.date)} às ${escapeHtml(appointment.time)} - ${formatAppointmentStatus(appointment.status)}</span>
                 </li>
               `).join("")}
             </ol>`
@@ -669,7 +669,7 @@ function renderUsers() {
         <h4 class="card-title">${escapeHtml(user.username)}</h4>
         <p class="card-meta">Criado em ${formatDateTime(user.createdAt)}</p>
       </div>
-      <span class="status ${user.mfaEnabled ? "agendado" : "cancelado"}">${user.mfaEnabled ? "MFA ativo" : "MFA pendente"}</span>
+      <span class="status ${user.mfaEnabled ? "agendado" : "cancelado"}">${user.mfaEnabled ? "MFA Ativo" : "MFA Pendente"}</span>
     </article>
   `).join("");
 }
@@ -701,6 +701,15 @@ function getOffsetDate(days) {
 
 function defaultProfessional(type) {
   return type === "Cirurgia" ? surgeonName : "";
+}
+
+function formatAppointmentStatus(status) {
+  const labels = {
+    agendado: "Agendado",
+    cancelado: "Desmarcado"
+  };
+
+  return labels[status] || escapeHtml(status);
 }
 
 function formatDate(value) {

@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/styles.css?v=20260717-professional-cards" />
+    <link rel="stylesheet" href="/styles.css?v=20260717-polished-ui" />
   </head>
   <body>
     <header class="topbar">
@@ -39,19 +39,19 @@
         <section class="summary-band" aria-label="Resumo da clínica">
           <div class="metric">
             <strong id="totalClientes">0</strong>
-            <span>clientes</span>
+            <span>Clientes</span>
           </div>
           <div class="metric">
             <strong id="totalPets">0</strong>
-            <span>pets</span>
+            <span>Pets</span>
           </div>
           <div class="metric">
             <strong id="totalAgendados">0</strong>
-            <span>agendados</span>
+            <span>Agendados</span>
           </div>
           <div class="metric">
             <strong id="totalCancelados">0</strong>
-            <span>desmarcados</span>
+            <span>Desmarcados</span>
           </div>
         </section>
 
@@ -63,15 +63,15 @@
           <div class="dashboard-grid">
             <button class="dashboard-tile" type="button" data-open-page="agenda">
               <strong id="todayAppointments">0</strong>
-              <span>atendimentos para hoje</span>
+              <span>Atendimentos para hoje</span>
             </button>
             <button class="dashboard-tile" type="button" data-open-page="cadastros">
               <strong>+</strong>
-              <span>cadastrar cliente ou pet</span>
+              <span>Cadastrar cliente ou pet</span>
             </button>
             <button class="dashboard-tile" type="button" data-open-page="pacientes">
               <strong id="petsWithHistory">0</strong>
-              <span>pets com histórico</span>
+              <span>Pets com histórico</span>
             </button>
           </div>
         </section>
@@ -88,7 +88,7 @@
             <form class="panel form-panel" id="appointmentForm">
               <div class="panel-head">
                 <h3>Novo agendamento</h3>
-                <span class="pill">agenda</span>
+                <span class="pill">Agenda</span>
               </div>
 
               <label>
@@ -162,7 +162,7 @@
             <form class="panel form-panel" id="clientForm">
               <div class="panel-head">
                 <h3>Cadastrar cliente</h3>
-                <span class="pill coral">tutor</span>
+                <span class="pill coral">Tutor</span>
               </div>
 
               <label>
@@ -192,7 +192,7 @@
             <form class="panel form-panel" id="petForm">
               <div class="panel-head">
                 <h3>Cadastrar pet</h3>
-                <span class="pill green">paciente</span>
+                <span class="pill green">Paciente</span>
               </div>
 
               <label>
@@ -249,7 +249,7 @@
               Pesquisar
               <input id="patientSearch" type="search" placeholder="Buscar por pet, tutor, telefone, espécie..." />
             </label>
-            <span id="patientCount" class="patient-count">0 pets</span>
+            <span id="patientCount" class="patient-count">0 Pets</span>
           </div>
           <div class="directory" id="directoryList"></div>
           <div class="pagination" id="patientPagination"></div>
@@ -288,7 +288,7 @@
             <div class="panel list-panel">
               <div class="panel-head">
                 <h3>Usuários cadastrados</h3>
-                <span class="pill green">acesso</span>
+                <span class="pill green">Acesso</span>
               </div>
               <div class="users-list" id="usersList"></div>
             </div>
@@ -299,6 +299,6 @@
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-    <script src="/app.js?v=20260717-professional-cards"></script>
+    <script src="/app.js?v=20260717-polished-ui"></script>
   </body>
 </html>
