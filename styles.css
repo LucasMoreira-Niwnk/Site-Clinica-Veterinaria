@@ -550,13 +550,87 @@ textarea:focus {
 .directory {
   width: min(1180px, 100%);
   margin: 0 auto;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: 1fr;
 }
 
 .client-card {
   align-content: start;
-  min-height: 190px;
   border-left-color: var(--green);
+}
+
+.patient-toolbar {
+  display: flex;
+  width: min(1180px, 100%);
+  margin: 0 auto 16px;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.patient-toolbar label {
+  width: min(520px, 100%);
+}
+
+.patient-count {
+  color: var(--muted);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.patient-card {
+  padding: 18px;
+}
+
+.patient-sections {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.8fr) minmax(320px, 1.2fr);
+  gap: 16px;
+}
+
+.patient-section {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+
+.edit-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 12px;
+  background: #f8fbfa;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.edit-form .card-actions,
+.edit-wide {
+  grid-column: 1 / -1;
+}
+
+.pagination {
+  display: flex;
+  width: min(1180px, 100%);
+  margin: 18px auto 0;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.pagination button {
+  min-width: 40px;
+  min-height: 38px;
+  color: var(--teal-dark);
+  background: #e8f4f2;
+  border: 0;
+  border-radius: 8px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.pagination button.is-active {
+  color: #fff;
+  background: var(--teal);
 }
 
 .user-card {
@@ -666,7 +740,8 @@ textarea:focus {
 @media (max-width: 920px) {
   .app-grid,
   .directory,
-  .dashboard-grid {
+  .dashboard-grid,
+  .patient-sections {
     grid-template-columns: 1fr;
   }
 
@@ -705,8 +780,14 @@ textarea:focus {
   }
 
   .summary-band,
-  .field-row {
+  .field-row,
+  .edit-form {
     grid-template-columns: 1fr;
+  }
+
+  .patient-toolbar {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .workspace {

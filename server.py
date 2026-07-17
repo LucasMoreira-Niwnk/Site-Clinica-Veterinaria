@@ -292,6 +292,82 @@ def insert_pet(payload: dict) -> None:
         touch_updated_at(db)
 
 
+def update_client(client_id: str, payload: dict) -> None:
+    require_fields(payload, ("name", "phone"))
+    now = utc_now()
+
+    with connect() as db:
+        cursor = db.execute(
+            """
+            UPDATE clients
+            SET name = ?, phone = ?, email = ?, address = ?, updated_at = ?
+            WHERE id = ?
+            """,
+            (
+                payload["name"].strip(),
+                payload["phone"].strip(),
+                payload.get("email", "").strip(),
+                payload.get("address", "").strip(),
+                now,
+                client_id,
+            ),
+        )
+
+        if cursor.rowcount == 0:
+            raise KeyError("Cliente nao encontrado")
+
+        touch_updated_at(db)
+
+
+def delete_client(client_id: str) -> None:
+    with connect() as db:
+        cursor = db.execute("DELETE FROM clients WHERE id = ?", (client_id,))
+
+        if cursor.rowcount == 0:
+            raise KeyError("Cliente nao encontrado")
+
+        touch_updated_at(db)
+
+
+def update_pet(pet_id: str, payload: dict) -> None:
+    require_fields(payload, ("ownerId", "name", "species"))
+    now = utc_now()
+
+    with connect() as db:
+        cursor = db.execute(
+            """
+            UPDATE pets
+            SET owner_id = ?, name = ?, species = ?, breed = ?, age = ?, notes = ?, updated_at = ?
+            WHERE id = ?
+            """,
+            (
+                payload["ownerId"],
+                payload["name"].strip(),
+                payload["species"].strip(),
+                payload.get("breed", "").strip(),
+                str(payload.get("age", "")).strip(),
+                payload.get("notes", "").strip(),
+                now,
+                pet_id,
+            ),
+        )
+
+        if cursor.rowcount == 0:
+            raise KeyError("Pet nao encontrado")
+
+        touch_updated_at(db)
+
+
+def delete_pet(pet_id: str) -> None:
+    with connect() as db:
+        cursor = db.execute("DELETE FROM pets WHERE id = ?", (pet_id,))
+
+        if cursor.rowcount == 0:
+            raise KeyError("Pet nao encontrado")
+
+        touch_updated_at(db)
+
+
 def insert_appointment(payload: dict) -> None:
     require_fields(payload, ("id", "petId", "type", "date", "time"))
     now = utc_now()
@@ -616,6 +692,56 @@ class AltaVetHandler(BaseHTTPRequestHandler):
             self.send_error_json(str(error), HTTPStatus.BAD_REQUEST)
         except PermissionError as error:
             self.send_error_json(str(error), HTTPStatus.UNAUTHORIZED)
+
+    def do_PUT(self) -> None:
+        parsed = urlparse(self.path)
+        parts = [part for part in parsed.path.split("/") if part]
+
+        try:
+            if not self.require_auth():
+                return
+
+            payload = self.read_json()
+
+            if len(parts) == 3 and parts[:2] == ["api", "clients"]:
+                update_client(unquote(parts[2]), payload)
+                self.send_json(get_state())
+                return
+
+            if len(parts) == 3 and parts[:2] == ["api", "pets"]:
+                update_pet(unquote(parts[2]), payload)
+                self.send_json(get_state())
+                return
+
+            self.send_error_json("Rota nao encontrada", HTTPStatus.NOT_FOUND)
+        except sqlite3.IntegrityError as error:
+            self.send_error_json(f"Erro de integridade: {error}", HTTPStatus.BAD_REQUEST)
+        except KeyError as error:
+            self.send_error_json(str(error), HTTPStatus.NOT_FOUND)
+        except ValueError as error:
+            self.send_error_json(str(error), HTTPStatus.BAD_REQUEST)
+
+    def do_DELETE(self) -> None:
+        parsed = urlparse(self.path)
+        parts = [part for part in parsed.path.split("/") if part]
+
+        try:
+            if not self.require_auth():
+                return
+
+            if len(parts) == 3 and parts[:2] == ["api", "clients"]:
+                delete_client(unquote(parts[2]))
+                self.send_json(get_state())
+                return
+
+            if len(parts) == 3 and parts[:2] == ["api", "pets"]:
+                delete_pet(unquote(parts[2]))
+                self.send_json(get_state())
+                return
+
+            self.send_error_json("Rota nao encontrada", HTTPStatus.NOT_FOUND)
+        except KeyError as error:
+            self.send_error_json(str(error), HTTPStatus.NOT_FOUND)
 
     def do_PATCH(self) -> None:
         parsed = urlparse(self.path)
