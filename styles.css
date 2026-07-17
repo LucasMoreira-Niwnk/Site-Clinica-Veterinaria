@@ -558,11 +558,22 @@ textarea:focus {
 .ghost-button {
   color: var(--teal-dark);
   background: #e8f4f2;
+  border: 1px solid transparent;
 }
 
 .danger-button {
   color: #fff;
   background: var(--coral);
+  border: 1px solid transparent;
+}
+
+.ghost-button:hover {
+  border-color: #b8d8d4;
+  background: #dff0ed;
+}
+
+.danger-button:hover {
+  background: #d95f54;
 }
 
 .danger-button:disabled {
@@ -588,6 +599,10 @@ textarea:focus {
   align-items: end;
   justify-content: space-between;
   gap: 16px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.74);
+  border: 1px solid rgba(217, 226, 229, 0.8);
+  border-radius: 8px;
 }
 
 .patient-toolbar label {
@@ -595,25 +610,77 @@ textarea:focus {
 }
 
 .patient-count {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  padding: 0 12px;
   color: var(--muted);
+  background: #f8fbfa;
+  border: 1px solid var(--line);
+  border-radius: 8px;
   font-weight: 800;
   white-space: nowrap;
 }
 
 .patient-card {
-  padding: 18px;
+  gap: 0;
+  overflow: hidden;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.96);
+  border-left: 0;
+  border-top: 4px solid var(--green);
+  box-shadow: 0 12px 36px rgba(26, 44, 58, 0.1);
 }
 
 .patient-sections {
   display: grid;
-  grid-template-columns: minmax(260px, 0.8fr) minmax(320px, 1.2fr);
-  gap: 16px;
+  grid-template-columns: minmax(280px, 0.92fr) minmax(360px, 1.08fr);
+  gap: 0;
 }
 
 .patient-section {
   display: grid;
-  gap: 12px;
+  min-width: 0;
+  gap: 14px;
   align-content: start;
+  padding: 18px;
+}
+
+.patient-section + .patient-section {
+  border-left: 1px solid var(--line);
+}
+
+.patient-card-head {
+  display: grid;
+  min-height: 118px;
+  grid-template-columns: minmax(0, 1fr) minmax(190px, auto);
+  align-items: start;
+  gap: 18px;
+}
+
+.patient-info {
+  min-width: 0;
+}
+
+.patient-info .eyebrow {
+  margin-bottom: 8px;
+}
+
+.patient-info .card-title {
+  font-size: 1.08rem;
+}
+
+.patient-info .card-meta {
+  overflow-wrap: anywhere;
+}
+
+.patient-actions {
+  justify-content: flex-end;
+}
+
+.patient-actions .ghost-button,
+.patient-actions .danger-button {
+  min-width: 104px;
 }
 
 .edit-form {
@@ -688,8 +755,8 @@ textarea:focus {
 
 .pet-history {
   display: grid;
-  gap: 8px;
-  padding: 10px;
+  gap: 10px;
+  padding: 14px;
   background: #f8fbfa;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -711,9 +778,9 @@ textarea:focus {
 
 .history-list {
   display: grid;
-  gap: 6px;
+  gap: 8px;
   margin: 0;
-  padding-left: 20px;
+  padding-left: 18px;
   color: var(--muted);
   font-size: 0.84rem;
 }
@@ -766,6 +833,15 @@ textarea:focus {
   .dashboard-grid,
   .patient-sections {
     grid-template-columns: 1fr;
+  }
+
+  .patient-section + .patient-section {
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+
+  .patient-card-head {
+    min-height: auto;
   }
 
   .summary-band {
@@ -848,6 +924,7 @@ textarea:focus {
   .patient-toolbar {
     align-items: stretch;
     flex-direction: column;
+    padding: 10px;
   }
 
   .workspace {
@@ -856,6 +933,26 @@ textarea:focus {
 
   .app-page:not(#dashboard) .workspace {
     padding: 24px 14px;
+  }
+
+  .patient-section {
+    padding: 14px;
+  }
+
+  .patient-card-head {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .patient-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .patient-actions .ghost-button,
+  .patient-actions .danger-button {
+    min-width: 0;
+    width: 100%;
   }
 
   .panel-head,
@@ -875,8 +972,8 @@ textarea:focus {
     padding: 14px;
   }
 
-  .card-actions > button,
-  .card-actions > a {
+  .card-actions:not(.patient-actions) > button,
+  .card-actions:not(.patient-actions) > a {
     width: 100%;
   }
 

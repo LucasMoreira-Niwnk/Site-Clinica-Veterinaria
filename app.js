@@ -477,16 +477,16 @@ function renderPatientCard(pet) {
   return `
     <article class="client-card patient-card" data-client-id="${escapeHtml(owner?.id || "")}" data-pet-id="${escapeHtml(pet.id)}">
       <div class="patient-sections">
-        <section class="patient-section">
-          <div class="card-top">
-            <div>
+        <section class="patient-section patient-owner">
+          <div class="card-top patient-card-head">
+            <div class="patient-info">
               <p class="eyebrow">Tutor</p>
               <h3 class="card-title">${escapeHtml(owner?.name || "Tutor não encontrado")}</h3>
               <p class="card-meta">${escapeHtml(owner?.phone || "")}${owner?.email ? ` - ${escapeHtml(owner.email)}` : ""}</p>
               ${owner?.address ? `<p class="card-meta">${escapeHtml(owner.address)}</p>` : ""}
             </div>
             ${owner ? `
-              <div class="card-actions">
+              <div class="card-actions patient-actions">
                 <button class="ghost-button" type="button" data-action="edit-client" data-client-id="${owner.id}">Editar tutor</button>
                 <button class="danger-button" type="button" data-action="delete-client" data-client-id="${owner.id}">Excluir tutor</button>
               </div>
@@ -495,15 +495,15 @@ function renderPatientCard(pet) {
           ${owner && editingClientId === owner.id ? renderClientEditForm(owner) : ""}
         </section>
 
-        <section class="patient-section">
-          <div class="card-top">
-            <div>
+        <section class="patient-section patient-pet">
+          <div class="card-top patient-card-head">
+            <div class="patient-info">
               <p class="eyebrow">Pet</p>
               <h3 class="card-title">${escapeHtml(pet.name)}</h3>
               <p class="card-meta">${escapeHtml(pet.species)}${pet.breed ? ` - ${escapeHtml(pet.breed)}` : ""}${pet.age ? ` - ${escapeHtml(pet.age)} ano(s)` : ""}</p>
               ${pet.notes ? `<p class="card-meta">${escapeHtml(pet.notes)}</p>` : ""}
             </div>
-            <div class="card-actions">
+            <div class="card-actions patient-actions">
               <button class="ghost-button" type="button" data-action="edit-pet" data-pet-id="${pet.id}">Editar pet</button>
               <button class="danger-button" type="button" data-action="delete-pet" data-pet-id="${pet.id}">Excluir pet</button>
             </div>
