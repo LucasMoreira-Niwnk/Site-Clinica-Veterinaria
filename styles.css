@@ -149,6 +149,8 @@ a {
 }
 
 .dashboard-copy {
+  position: relative;
+  z-index: 1;
   display: flex;
   min-height: inherit;
   width: min(1180px, calc(100% - 36px));

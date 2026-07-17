@@ -669,6 +669,7 @@ class AltaVetHandler(BaseHTTPRequestHandler):
         self.send_response(HTTPStatus.OK)
         self.send_header("Content-Type", content_type or "application/octet-stream")
         self.send_header("Content-Length", str(len(data)))
+        self.send_header("Cache-Control", "no-store")
         self.end_headers()
         self.wfile.write(data)
 
@@ -678,9 +679,11 @@ class AltaVetHandler(BaseHTTPRequestHandler):
         self.send_response(HTTPStatus.OK)
         self.send_header("Content-Type", content_type or "application/octet-stream")
         self.send_header("Content-Length", str(target.stat().st_size))
+        self.send_header("Cache-Control", "no-store")
         self.end_headers()
 
     def static_target(self, path: str) -> Path:
+        path = urlparse(path).path
         clean_path = unquote(path).lstrip("/") or "index.html"
         target = (ROOT_DIR / clean_path).resolve()
 

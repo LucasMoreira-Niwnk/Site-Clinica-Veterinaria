@@ -2,7 +2,7 @@
   min-height: 100vh;
   background:
     linear-gradient(90deg, rgba(12, 27, 33, 0.82), rgba(12, 27, 33, 0.4)),
-    url("assets/clinica-hero.png") center / cover no-repeat;
+    url("/assets/clinica-hero.png") center / cover no-repeat;
 }
 
 .login-shell {
