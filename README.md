@@ -86,3 +86,26 @@ WantedBy=multi-user.target
 
 Os dados ficam no arquivo SQLite `data/altavet.db`.
 Em produção, faça backup periódico desse arquivo diretamente no servidor.
+
+## Alternativa sem Nginx para diagnostico
+
+Se o Nginx estiver recebendo pacotes mas o acesso externo nao abrir, publique temporariamente direto na porta `8000`.
+
+No servidor:
+
+```bash
+sudo cp /home/ubuntu/altavet/deploy/altavet-direct.service /etc/systemd/system/altavet.service
+sudo systemctl daemon-reload
+sudo systemctl restart altavet
+sudo ss -ltnp | grep :8000
+```
+
+O `ss` deve mostrar `0.0.0.0:8000`.
+
+Na Oracle Cloud, libere entrada TCP `8000` e teste:
+
+```text
+http://altavet.com.br:8000/login
+```
+
+Se abrir nessa porta, a aplicacao esta funcionando e o problema esta na configuracao do Nginx/porta 80.

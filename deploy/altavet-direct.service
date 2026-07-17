@@ -1,0 +1,19 @@
+[Unit]
+Description=AltaVet Direct Public Test
+After=network.target
+
+[Service]
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/altavet
+ExecStart=/usr/bin/python3 /home/ubuntu/altavet/server.py
+Restart=always
+RestartSec=5
+Environment=ALTAVET_HOST=0.0.0.0
+Environment=ALTAVET_PORT=8000
+Environment=ALTAVET_DB=/home/ubuntu/altavet/data/altavet.db
+Environment=ALTAVET_ADMIN_USER=admin
+Environment=ALTAVET_ADMIN_PASSWORD=troque-esta-senha
+
+[Install]
+WantedBy=multi-user.target

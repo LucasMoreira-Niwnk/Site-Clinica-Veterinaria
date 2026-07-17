@@ -513,6 +513,32 @@ def destroy_session(handler: "AltaVetHandler") -> None:
 
 
 class AltaVetHandler(BaseHTTPRequestHandler):
+    def do_HEAD(self) -> None:
+        parsed = urlparse(self.path)
+
+        if parsed.path in {"/login", "/login/"}:
+            self.send_static_headers("login.html")
+            return
+
+        if parsed.path == "/api/health":
+            self.send_json_headers()
+            return
+
+        if parsed.path == "/api/auth/me":
+            self.send_json_headers()
+            return
+
+        if parsed.path == "/api/state":
+            if not self.require_auth():
+                return
+            self.send_json_headers()
+            return
+
+        if not self.is_public_asset(parsed.path) and not self.require_auth(redirect=True):
+            return
+
+        self.send_static_headers(parsed.path)
+
     def do_GET(self) -> None:
         parsed = urlparse(self.path)
 
@@ -637,12 +663,7 @@ class AltaVetHandler(BaseHTTPRequestHandler):
         return payload
 
     def serve_static(self, path: str) -> None:
-        clean_path = unquote(path).lstrip("/") or "index.html"
-        target = (ROOT_DIR / clean_path).resolve()
-
-        if not str(target).startswith(str(ROOT_DIR)) or not target.exists() or target.is_dir():
-            target = ROOT_DIR / "index.html"
-
+        target = self.static_target(path)
         content_type, _ = mimetypes.guess_type(target.name)
         data = target.read_bytes()
         self.send_response(HTTPStatus.OK)
@@ -650,6 +671,23 @@ class AltaVetHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()
         self.wfile.write(data)
+
+    def send_static_headers(self, path: str) -> None:
+        target = self.static_target(path)
+        content_type, _ = mimetypes.guess_type(target.name)
+        self.send_response(HTTPStatus.OK)
+        self.send_header("Content-Type", content_type or "application/octet-stream")
+        self.send_header("Content-Length", str(target.stat().st_size))
+        self.end_headers()
+
+    def static_target(self, path: str) -> Path:
+        clean_path = unquote(path).lstrip("/") or "index.html"
+        target = (ROOT_DIR / clean_path).resolve()
+
+        if not str(target).startswith(str(ROOT_DIR)) or not target.exists() or target.is_dir():
+            target = ROOT_DIR / "index.html"
+
+        return target
 
     def send_json(
         self,
@@ -671,6 +709,11 @@ class AltaVetHandler(BaseHTTPRequestHandler):
             self.send_header("Set-Cookie", f"{SESSION_COOKIE}=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0")
         self.end_headers()
         self.wfile.write(data)
+
+    def send_json_headers(self, status: HTTPStatus = HTTPStatus.OK) -> None:
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.end_headers()
 
     def send_error_json(self, message: str, status: HTTPStatus) -> None:
         self.send_json({"error": message}, status)
