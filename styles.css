@@ -121,6 +121,13 @@ a {
   display: block;
 }
 
+.app-page:not(#dashboard) {
+  min-height: calc(100vh - 65px);
+  background:
+    linear-gradient(180deg, rgba(248, 251, 250, 0.9), rgba(248, 251, 250, 0.78)),
+    url("/assets/clinica-hero.png") center / cover no-repeat;
+}
+
 .dashboard-hero {
   position: relative;
   min-height: 430px;
@@ -288,6 +295,17 @@ a {
   padding: 56px clamp(18px, 4vw, 56px);
 }
 
+.app-page:not(#dashboard) .workspace {
+  width: min(1240px, calc(100% - 28px));
+  margin: 24px auto;
+  padding: 36px clamp(16px, 3vw, 34px);
+  background: rgba(255, 255, 255, 0.84);
+  border: 1px solid rgba(217, 226, 229, 0.9);
+  border-radius: 8px;
+  box-shadow: 0 18px 60px rgba(26, 44, 58, 0.12);
+  backdrop-filter: blur(12px);
+}
+
 .workspace.compact {
   padding-block: 34px;
 }
@@ -295,6 +313,11 @@ a {
 .workspace.alt {
   background: #eef6f3;
   border-block: 1px solid var(--line);
+}
+
+.app-page:not(#dashboard) .workspace.alt {
+  background: rgba(247, 252, 250, 0.88);
+  border: 1px solid rgba(217, 226, 229, 0.9);
 }
 
 .section-heading {
@@ -750,33 +773,70 @@ textarea:focus {
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 760px) {
   .topbar {
-    align-items: flex-start;
+    align-items: stretch;
     flex-direction: column;
     gap: 10px;
+    padding: 10px 14px;
   }
 
   .nav {
     width: 100%;
-    justify-content: space-between;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
   }
 
-  .nav a {
-    padding-inline: 8px;
+  .nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav a,
+  .nav-button {
+    flex: 0 0 auto;
+    min-height: 38px;
+    padding-inline: 11px;
+    white-space: nowrap;
+  }
+
+  .app-page:not(#dashboard) {
+    min-height: calc(100vh - 106px);
+    background-position: center top;
+  }
+
+  .app-page:not(#dashboard) .workspace {
+    width: calc(100% - 20px);
+    margin-block: 10px;
+  }
+
+  .section-heading {
+    margin-bottom: 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .topbar {
+    padding-inline: 12px;
+  }
+
+  .nav {
+    gap: 6px;
   }
 
   .dashboard-hero {
-    min-height: 590px;
+    min-height: 430px;
   }
 
   .dashboard-copy {
     width: min(100% - 28px, 1180px);
-    padding-top: 64px;
+    padding: 54px 0 48px;
   }
 
   .dashboard-copy h1 {
-    font-size: 3.1rem;
+    font-size: clamp(2.6rem, 16vw, 4rem);
   }
 
   .summary-band,
@@ -791,13 +851,37 @@ textarea:focus {
   }
 
   .workspace {
-    padding-block: 42px;
+    padding-block: 36px;
+  }
+
+  .app-page:not(#dashboard) .workspace {
+    padding: 24px 14px;
   }
 
   .panel-head,
   .card-top,
   .user-card {
     align-items: stretch;
+  }
+
+  .panel-head,
+  .card-top {
+    flex-direction: column;
+  }
+
+  .form-panel,
+  .list-panel,
+  .patient-card {
+    padding: 14px;
+  }
+
+  .card-actions > button,
+  .card-actions > a {
+    width: 100%;
+  }
+
+  .pagination button {
+    min-width: 38px;
   }
 
   .pet-history-head {
