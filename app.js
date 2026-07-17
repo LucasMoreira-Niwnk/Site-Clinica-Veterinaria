@@ -36,6 +36,11 @@ const els = {
   agendaCalendarMonth: document.querySelector("#agendaCalendarMonth"),
   agendaCalendarDays: document.querySelector("#agendaCalendarDays"),
   appointmentsList: document.querySelector("#appointmentsList"),
+  petHistoryModal: document.querySelector("#petHistoryModal"),
+  closePetHistory: document.querySelector("#closePetHistory"),
+  petHistoryTitle: document.querySelector("#petHistoryTitle"),
+  petHistorySubtitle: document.querySelector("#petHistorySubtitle"),
+  petHistoryDetails: document.querySelector("#petHistoryDetails"),
   patientSearch: document.querySelector("#patientSearch"),
   patientCount: document.querySelector("#patientCount"),
   patientPagination: document.querySelector("#patientPagination"),
@@ -200,6 +205,7 @@ document.addEventListener("click", (event) => {
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     toggleAgendaCalendar(false);
+    closePetHistory();
   }
 });
 
@@ -271,6 +277,10 @@ els.directoryList.addEventListener("click", async (event) => {
     renderDirectory();
   }
 
+  if (action === "view-pet-history") {
+    openPetHistory(petId);
+  }
+
   if (action === "cancel-pet") {
     editingPetId = null;
     renderDirectory();
@@ -292,6 +302,14 @@ els.patientPagination.addEventListener("click", (event) => {
 
   patientPage = Number(button.dataset.pageNumber);
   renderDirectory();
+});
+
+els.closePetHistory.addEventListener("click", closePetHistory);
+
+els.petHistoryModal.addEventListener("click", (event) => {
+  if (event.target === els.petHistoryModal) {
+    closePetHistory();
+  }
 });
 
 els.logoutButton.addEventListener("click", async () => {
@@ -549,6 +567,7 @@ function renderPatientCard(pet) {
               ${pet.notes ? `<p class="card-meta">${escapeHtml(pet.notes)}</p>` : ""}
             </div>
             <div class="card-actions patient-actions">
+              <button class="primary-button compact-button" type="button" data-action="view-pet-history" data-pet-id="${pet.id}">Ver histÃ³rico</button>
               <button class="ghost-button" type="button" data-action="edit-pet" data-pet-id="${pet.id}">Editar pet</button>
               <button class="danger-button" type="button" data-action="delete-pet" data-pet-id="${pet.id}">Excluir pet</button>
             </div>
@@ -633,6 +652,74 @@ function renderPetHistory(pet) {
           : `<p class="pet-line">Sem histórico de atendimentos.</p>`
       }
     </div>
+  `;
+}
+
+function openPetHistory(petId) {
+  const pet = findPet(petId);
+
+  if (!pet) return;
+
+  const owner = findOwner(pet.ownerId);
+  const history = state.appointments
+    .filter((appointment) => appointment.petId === pet.id)
+    .sort((a, b) => `${b.date} ${b.time}`.localeCompare(`${a.date} ${a.time}`));
+
+  els.petHistoryTitle.textContent = pet.name;
+  els.petHistorySubtitle.textContent = [
+    pet.species,
+    pet.breed,
+    owner?.name ? `Tutor: ${owner.name}` : "Tutor não encontrado"
+  ].filter(Boolean).join(" - ");
+
+  els.petHistoryDetails.innerHTML = history.length
+    ? `
+      <div class="history-summary">
+        <span>${history.length} ${history.length === 1 ? "Atendimento registrado" : "Atendimentos registrados"}</span>
+        <span>Mais recente: ${formatDate(history[0].date)}</span>
+      </div>
+      <div class="history-detail-list">
+        ${history.map((appointment) => renderPetHistoryDetail(appointment)).join("")}
+      </div>
+    `
+    : `<div class="empty">Este pet ainda não possui histórico de atendimentos.</div>`;
+
+  els.petHistoryModal.hidden = false;
+  document.body.classList.add("modal-open");
+}
+
+function closePetHistory() {
+  if (!els.petHistoryModal || els.petHistoryModal.hidden) return;
+
+  els.petHistoryModal.hidden = true;
+  document.body.classList.remove("modal-open");
+}
+
+function renderPetHistoryDetail(appointment) {
+  return `
+    <article class="history-detail-card">
+      <div class="history-detail-head">
+        <div>
+          <p class="eyebrow">${formatDate(appointment.date)} às ${escapeHtml(appointment.time)}</p>
+          <h3>${escapeHtml(appointment.type)}</h3>
+        </div>
+        <span class="status ${appointment.status}">${formatAppointmentStatus(appointment.status)}</span>
+      </div>
+      <dl class="history-detail-grid">
+        <div>
+          <dt>Motivo / Serviço</dt>
+          <dd>${escapeHtml(appointment.type)}</dd>
+        </div>
+        <div>
+          <dt>Profissional</dt>
+          <dd>${escapeHtml(appointment.professional || "Profissional a definir")}</dd>
+        </div>
+        <div class="history-detail-wide">
+          <dt>Observações</dt>
+          <dd>${appointment.notes ? escapeHtml(appointment.notes) : "Sem observações registradas."}</dd>
+        </div>
+      </dl>
+    </article>
   `;
 }
 
