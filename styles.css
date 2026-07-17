@@ -300,6 +300,11 @@ a {
   font-size: 1.05rem;
 }
 
+.inline-date {
+  max-width: 190px;
+  margin-top: 10px;
+}
+
 .pill {
   display: inline-flex;
   min-height: 28px;
@@ -525,9 +530,8 @@ textarea:focus {
 }
 
 .pet-chip-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  display: grid;
+  gap: 10px;
 }
 
 .pet-chip {
@@ -541,6 +545,48 @@ textarea:focus {
   border-radius: 999px;
   font-size: 0.8rem;
   font-weight: 800;
+}
+
+.pet-history {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  background: #f8fbfa;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.pet-history-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.history-count {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.history-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 20px;
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.history-list li strong,
+.history-list li span {
+  display: block;
+  line-height: 1.35;
+}
+
+.history-list li strong {
+  color: var(--ink);
 }
 
 .empty {
@@ -628,6 +674,11 @@ textarea:focus {
   .card-top,
   .user-card {
     align-items: stretch;
+  }
+
+  .pet-history-head {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .user-card {

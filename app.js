@@ -8,6 +8,7 @@ let state = {
   updatedAt: null
 };
 let agendaFilter = "ativos";
+let selectedAgendaDate = getOffsetDate(0);
 
 const els = {
   userForm: document.querySelector("#userForm"),
@@ -17,6 +18,7 @@ const els = {
   logoutButton: document.querySelector("#logoutButton"),
   petOwner: document.querySelector("#petOwner"),
   appointmentPet: document.querySelector("#appointmentPet"),
+  agendaDate: document.querySelector("#agendaDate"),
   appointmentsList: document.querySelector("#appointmentsList"),
   directoryList: document.querySelector("#directoryList"),
   usersList: document.querySelector("#usersList"),
@@ -29,8 +31,9 @@ const els = {
   }
 };
 
-document.querySelector("#appointmentDate").value = getOffsetDate(1);
+document.querySelector("#appointmentDate").value = selectedAgendaDate;
 document.querySelector("#appointmentTime").value = "10:00";
+els.agendaDate.value = selectedAgendaDate;
 
 document.querySelector("#appointmentType").addEventListener("change", (event) => {
   const professionalInput = document.querySelector("#appointmentProfessional");
@@ -107,10 +110,17 @@ els.appointmentForm.addEventListener("submit", async (event) => {
 
   await saveRecord("appointments", appointment);
   els.appointmentForm.reset();
-  document.querySelector("#appointmentDate").value = getOffsetDate(1);
+  selectedAgendaDate = appointment.date;
+  els.agendaDate.value = selectedAgendaDate;
+  document.querySelector("#appointmentDate").value = selectedAgendaDate;
   document.querySelector("#appointmentTime").value = "10:00";
   await reloadAfterMutation();
   showToast("Atendimento marcado na agenda.");
+});
+
+els.agendaDate.addEventListener("change", () => {
+  selectedAgendaDate = els.agendaDate.value || getOffsetDate(0);
+  renderAppointments();
 });
 
 document.querySelectorAll("[data-filter]").forEach((button) => {
@@ -247,11 +257,12 @@ function renderSelects() {
 
 function renderAppointments() {
   const items = state.appointments
+    .filter((appointment) => appointment.date === selectedAgendaDate)
     .filter((appointment) => agendaFilter === "todos" || appointment.status === "agendado")
     .sort((a, b) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`));
 
   if (!items.length) {
-    els.appointmentsList.innerHTML = `<div class="empty">Nenhum atendimento para este filtro.</div>`;
+    els.appointmentsList.innerHTML = `<div class="empty">Nenhum atendimento em ${formatDate(selectedAgendaDate)} para este filtro.</div>`;
     return;
   }
 
@@ -302,13 +313,40 @@ function renderDirectory() {
         <div class="pet-chip-list">
           ${
             pets.length
-              ? pets.map((pet) => `<span class="pet-chip">${escapeHtml(pet.name)} - ${escapeHtml(pet.species)}</span>`).join("")
+              ? pets.map((pet) => renderPetHistory(pet)).join("")
               : `<span class="pet-line">Nenhum pet vinculado</span>`
           }
         </div>
       </article>
     `;
   }).join("");
+}
+
+function renderPetHistory(pet) {
+  const history = state.appointments
+    .filter((appointment) => appointment.petId === pet.id)
+    .sort((a, b) => `${b.date} ${b.time}`.localeCompare(`${a.date} ${a.time}`));
+
+  return `
+    <div class="pet-history">
+      <div class="pet-history-head">
+        <span class="pet-chip">${escapeHtml(pet.name)} - ${escapeHtml(pet.species)}</span>
+        <span class="history-count">${history.length} atendimento${history.length === 1 ? "" : "s"}</span>
+      </div>
+      ${
+        history.length
+          ? `<ol class="history-list">
+              ${history.slice(0, 5).map((appointment) => `
+                <li>
+                  <strong>${escapeHtml(appointment.type)}</strong>
+                  <span>${formatDate(appointment.date)} as ${escapeHtml(appointment.time)} - ${escapeHtml(appointment.status)}</span>
+                </li>
+              `).join("")}
+            </ol>`
+          : `<p class="pet-line">Sem histórico de atendimentos.</p>`
+      }
+    </div>
+  `;
 }
 
 function renderTotals() {
