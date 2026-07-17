@@ -9,6 +9,7 @@ let state = {
 };
 let agendaFilter = "ativos";
 let selectedAgendaDate = getOffsetDate(0);
+const pageNames = new Set(["dashboard", "agenda", "cadastros", "pacientes", "usuarios"]);
 
 const els = {
   userForm: document.querySelector("#userForm"),
@@ -16,6 +17,9 @@ const els = {
   petForm: document.querySelector("#petForm"),
   appointmentForm: document.querySelector("#appointmentForm"),
   logoutButton: document.querySelector("#logoutButton"),
+  pages: document.querySelectorAll("[data-page]"),
+  navLinks: document.querySelectorAll("[data-nav]"),
+  dashboardLinks: document.querySelectorAll("[data-open-page]"),
   petOwner: document.querySelector("#petOwner"),
   appointmentPet: document.querySelector("#appointmentPet"),
   agendaDate: document.querySelector("#agendaDate"),
@@ -23,6 +27,8 @@ const els = {
   directoryList: document.querySelector("#directoryList"),
   usersList: document.querySelector("#usersList"),
   toast: document.querySelector("#toast"),
+  todayAppointments: document.querySelector("#todayAppointments"),
+  petsWithHistory: document.querySelector("#petsWithHistory"),
   totals: {
     clients: document.querySelector("#totalClientes"),
     pets: document.querySelector("#totalPets"),
@@ -41,6 +47,27 @@ document.querySelector("#appointmentType").addEventListener("change", (event) =>
   if (event.target.value === "Cirurgia") {
     professionalInput.value = surgeonName;
   }
+});
+
+window.addEventListener("hashchange", () => {
+  openPage(pageFromHash());
+});
+
+els.navLinks.forEach((link) => {
+  link.addEventListener("click", (event) => {
+    const page = link.dataset.nav;
+
+    if (!page) return;
+
+    event.preventDefault();
+    openPage(page, true);
+  });
+});
+
+els.dashboardLinks.forEach((button) => {
+  button.addEventListener("click", () => {
+    openPage(button.dataset.openPage, true);
+  });
 });
 
 els.userForm.addEventListener("submit", async (event) => {
@@ -164,6 +191,7 @@ init();
 
 async function init() {
   setFormsDisabled(true);
+  openPage(pageFromHash(), false);
 
   try {
     await refreshState();
@@ -235,6 +263,28 @@ function render() {
   renderDirectory();
   renderUsers();
   renderTotals();
+  renderDashboard();
+}
+
+function openPage(page, updateHash = false) {
+  const nextPage = pageNames.has(page) ? page : "dashboard";
+
+  els.pages.forEach((section) => {
+    section.classList.toggle("is-active", section.dataset.page === nextPage);
+  });
+  els.navLinks.forEach((link) => {
+    link.classList.toggle("is-active", link.dataset.nav === nextPage);
+  });
+
+  if (updateHash) {
+    history.pushState(null, "", `#${nextPage}`);
+  }
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function pageFromHash() {
+  return window.location.hash.replace("#", "") || "dashboard";
 }
 
 function renderSelects() {
@@ -354,6 +404,16 @@ function renderTotals() {
   els.totals.pets.textContent = state.pets.length;
   els.totals.active.textContent = state.appointments.filter((item) => item.status === "agendado").length;
   els.totals.canceled.textContent = state.appointments.filter((item) => item.status === "cancelado").length;
+}
+
+function renderDashboard() {
+  const today = getOffsetDate(0);
+  const petIdsWithHistory = new Set(state.appointments.map((appointment) => appointment.petId));
+
+  els.todayAppointments.textContent = state.appointments.filter((appointment) => {
+    return appointment.date === today && appointment.status === "agendado";
+  }).length;
+  els.petsWithHistory.textContent = state.pets.filter((pet) => petIdsWithHistory.has(pet.id)).length;
 }
 
 function renderUsers() {

@@ -107,19 +107,28 @@ a {
 }
 
 .nav a:hover,
+.nav a.is-active,
 .nav-button:hover {
   color: var(--teal-dark);
   background: #e8f4f2;
 }
 
-.hero {
+.app-page {
+  display: none;
+}
+
+.app-page.is-active {
+  display: block;
+}
+
+.dashboard-hero {
   position: relative;
-  min-height: min(620px, calc(100vh - 56px));
+  min-height: 430px;
   overflow: hidden;
   isolation: isolate;
 }
 
-.hero img {
+.dashboard-hero img {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -129,7 +138,7 @@ a {
   z-index: -2;
 }
 
-.hero::after {
+.dashboard-hero::after {
   position: absolute;
   inset: 0;
   z-index: -1;
@@ -139,7 +148,7 @@ a {
     linear-gradient(0deg, rgba(12, 27, 33, 0.3), rgba(12, 27, 33, 0.02));
 }
 
-.hero-overlay {
+.dashboard-copy {
   display: flex;
   min-height: inherit;
   width: min(1180px, calc(100% - 36px));
@@ -160,7 +169,7 @@ a {
   text-transform: uppercase;
 }
 
-.hero h1 {
+.dashboard-copy h1 {
   margin: 0;
   max-width: 620px;
   font-size: clamp(3.2rem, 10vw, 7rem);
@@ -168,19 +177,12 @@ a {
   letter-spacing: 0;
 }
 
-.hero-copy {
+.dashboard-copy p:not(.eyebrow) {
   max-width: 600px;
   margin: 24px 0 0;
   color: rgba(255, 255, 255, 0.9);
   font-size: clamp(1.05rem, 2vw, 1.28rem);
   line-height: 1.55;
-}
-
-.hero-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 30px;
 }
 
 .primary-link,
@@ -222,6 +224,44 @@ a {
   gap: 1px;
   background: var(--line);
   border-block: 1px solid var(--line);
+}
+
+.dashboard-grid {
+  display: grid;
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.dashboard-tile {
+  display: grid;
+  min-height: 150px;
+  align-content: center;
+  gap: 10px;
+  padding: 22px;
+  color: var(--ink);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  text-align: left;
+  cursor: pointer;
+}
+
+.dashboard-tile:hover {
+  border-color: var(--teal);
+}
+
+.dashboard-tile strong {
+  color: var(--teal-dark);
+  font-size: 2.4rem;
+  line-height: 1;
+}
+
+.dashboard-tile span {
+  color: var(--muted);
+  font-weight: 800;
 }
 
 .metric {
@@ -623,7 +663,8 @@ textarea:focus {
 
 @media (max-width: 920px) {
   .app-grid,
-  .directory {
+  .directory,
+  .dashboard-grid {
     grid-template-columns: 1fr;
   }
 
@@ -648,16 +689,16 @@ textarea:focus {
     padding-inline: 8px;
   }
 
-  .hero {
+  .dashboard-hero {
     min-height: 590px;
   }
 
-  .hero-overlay {
+  .dashboard-copy {
     width: min(100% - 28px, 1180px);
     padding-top: 64px;
   }
 
-  .hero h1 {
+  .dashboard-copy h1 {
     font-size: 3.1rem;
   }
 
