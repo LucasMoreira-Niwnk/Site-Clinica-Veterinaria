@@ -9,6 +9,7 @@ let state = {
 };
 let agendaFilter = "ativos";
 let selectedAgendaDate = getOffsetDate(0);
+let calendarViewDate = parseLocalDate(selectedAgendaDate);
 let patientSearchTerm = "";
 let patientPage = 1;
 let editingClientId = null;
@@ -28,6 +29,12 @@ const els = {
   petOwner: document.querySelector("#petOwner"),
   appointmentPet: document.querySelector("#appointmentPet"),
   agendaDate: document.querySelector("#agendaDate"),
+  agendaDatePicker: document.querySelector("#agendaDatePicker"),
+  agendaDateTrigger: document.querySelector("#agendaDateTrigger"),
+  agendaDateText: document.querySelector("#agendaDateText"),
+  agendaDatePopover: document.querySelector("#agendaDatePopover"),
+  agendaCalendarMonth: document.querySelector("#agendaCalendarMonth"),
+  agendaCalendarDays: document.querySelector("#agendaCalendarDays"),
   appointmentsList: document.querySelector("#appointmentsList"),
   patientSearch: document.querySelector("#patientSearch"),
   patientCount: document.querySelector("#patientCount"),
@@ -48,6 +55,8 @@ const els = {
 document.querySelector("#appointmentDate").value = selectedAgendaDate;
 document.querySelector("#appointmentTime").value = "10:00";
 els.agendaDate.value = selectedAgendaDate;
+updateAgendaDateDisplay();
+renderAgendaCalendar();
 
 document.querySelector("#appointmentType").addEventListener("change", (event) => {
   const professionalInput = document.querySelector("#appointmentProfessional");
@@ -147,6 +156,9 @@ els.appointmentForm.addEventListener("submit", async (event) => {
   els.appointmentForm.reset();
   selectedAgendaDate = appointment.date;
   els.agendaDate.value = selectedAgendaDate;
+  calendarViewDate = parseLocalDate(selectedAgendaDate);
+  updateAgendaDateDisplay();
+  renderAgendaCalendar();
   document.querySelector("#appointmentDate").value = selectedAgendaDate;
   document.querySelector("#appointmentTime").value = "10:00";
   await reloadAfterMutation();
@@ -155,7 +167,40 @@ els.appointmentForm.addEventListener("submit", async (event) => {
 
 els.agendaDate.addEventListener("change", () => {
   selectedAgendaDate = els.agendaDate.value || getOffsetDate(0);
+  calendarViewDate = parseLocalDate(selectedAgendaDate);
+  updateAgendaDateDisplay();
+  renderAgendaCalendar();
   renderAppointments();
+});
+
+els.agendaDateTrigger.addEventListener("click", () => {
+  toggleAgendaCalendar(els.agendaDatePopover.hidden);
+});
+
+els.agendaDatePopover.addEventListener("click", (event) => {
+  const navButton = event.target.closest("[data-calendar-nav]");
+  const dayButton = event.target.closest("[data-date-value]");
+
+  if (navButton) {
+    calendarViewDate.setMonth(calendarViewDate.getMonth() + (navButton.dataset.calendarNav === "next" ? 1 : -1));
+    renderAgendaCalendar();
+  }
+
+  if (dayButton) {
+    selectAgendaDate(dayButton.dataset.dateValue);
+  }
+});
+
+document.addEventListener("click", (event) => {
+  if (!els.agendaDatePicker.contains(event.target)) {
+    toggleAgendaCalendar(false);
+  }
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    toggleAgendaCalendar(false);
+  }
 });
 
 els.patientSearch.addEventListener("input", () => {
@@ -697,6 +742,69 @@ function getOffsetDate(days) {
   const date = new Date();
   date.setDate(date.getDate() + days);
   return date.toISOString().slice(0, 10);
+}
+
+function parseLocalDate(value) {
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function toDateValue(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function updateAgendaDateDisplay() {
+  els.agendaDate.value = selectedAgendaDate;
+  els.agendaDateText.textContent = formatDate(selectedAgendaDate);
+}
+
+function toggleAgendaCalendar(open) {
+  els.agendaDatePopover.hidden = !open;
+  els.agendaDateTrigger.setAttribute("aria-expanded", String(open));
+
+  if (open) {
+    renderAgendaCalendar();
+  }
+}
+
+function selectAgendaDate(value) {
+  selectedAgendaDate = value;
+  calendarViewDate = parseLocalDate(value);
+  updateAgendaDateDisplay();
+  renderAgendaCalendar();
+  renderAppointments();
+  toggleAgendaCalendar(false);
+}
+
+function renderAgendaCalendar() {
+  const year = calendarViewDate.getFullYear();
+  const month = calendarViewDate.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const start = new Date(year, month, 1 - firstDay.getDay());
+  const todayValue = getOffsetDate(0);
+
+  els.agendaCalendarMonth.textContent = firstDay.toLocaleDateString("pt-BR", {
+    month: "long",
+    year: "numeric"
+  });
+
+  els.agendaCalendarDays.innerHTML = Array.from({ length: 42 }, (_, index) => {
+    const date = new Date(start);
+    date.setDate(start.getDate() + index);
+    const value = toDateValue(date);
+    const classes = [
+      "date-day",
+      date.getMonth() !== month ? "is-muted" : "",
+      value === todayValue ? "is-today" : "",
+      value === selectedAgendaDate ? "is-selected" : ""
+    ].filter(Boolean).join(" ");
+
+    return `<button class="${classes}" type="button" data-date-value="${value}">${date.getDate()}</button>`;
+  }).join("");
 }
 
 function defaultProfessional(type) {

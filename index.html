@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/styles.css?v=20260717-polished-ui" />
+    <link rel="stylesheet" href="/styles.css?v=20260717-branded-datepicker" />
   </head>
   <body>
     <header class="topbar">
@@ -135,10 +135,31 @@
               <div class="panel-head">
                 <div>
                   <h3>Agenda do dia</h3>
-                  <label class="inline-date">
-                    Data
-                    <input id="agendaDate" type="date" />
-                  </label>
+                  <div class="date-field inline-date" id="agendaDatePicker">
+                    <span class="date-label">Data</span>
+                    <button class="date-trigger" type="button" id="agendaDateTrigger" aria-haspopup="dialog" aria-expanded="false">
+                      <span id="agendaDateText">--/--/----</span>
+                      <span class="date-trigger-icon" aria-hidden="true"></span>
+                    </button>
+                    <input id="agendaDate" type="hidden" />
+                    <div class="date-popover" id="agendaDatePopover" hidden>
+                      <div class="date-popover-head">
+                        <button type="button" class="date-nav-button" data-calendar-nav="prev" aria-label="MÃªs anterior">‹</button>
+                        <strong id="agendaCalendarMonth"></strong>
+                        <button type="button" class="date-nav-button" data-calendar-nav="next" aria-label="PrÃ³ximo mÃªs">›</button>
+                      </div>
+                      <div class="date-weekdays" aria-hidden="true">
+                        <span>Dom</span>
+                        <span>Seg</span>
+                        <span>Ter</span>
+                        <span>Qua</span>
+                        <span>Qui</span>
+                        <span>Sex</span>
+                        <span>SÃ¡b</span>
+                      </div>
+                      <div class="date-days" id="agendaCalendarDays"></div>
+                    </div>
+                  </div>
                 </div>
                 <div class="segmented" role="tablist" aria-label="Filtro de agenda">
                   <button class="is-active" type="button" data-filter="ativos">Ativos</button>
@@ -299,6 +320,6 @@
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-    <script src="/app.js?v=20260717-polished-ui"></script>
+    <script src="/app.js?v=20260717-branded-datepicker"></script>
   </body>
 </html>
