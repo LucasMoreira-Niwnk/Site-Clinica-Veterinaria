@@ -1039,8 +1039,9 @@ textarea:focus {
 
 .modal-panel {
   display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   width: min(920px, 100%);
-  max-height: min(760px, calc(100vh - 44px));
+  max-height: calc(100vh - 44px);
   overflow: hidden;
   background: rgba(255, 255, 255, 0.98);
   border: 1px solid rgba(202, 217, 220, 0.96);
@@ -1091,7 +1092,9 @@ textarea:focus {
 }
 
 .modal-body {
-  overflow: auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 20px 24px 24px;
 }
 
@@ -1136,6 +1139,15 @@ textarea:focus {
   align-items: flex-start;
   justify-content: space-between;
   gap: 14px;
+}
+
+.history-detail-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .history-detail-head h3 {
@@ -1388,6 +1400,11 @@ textarea:focus {
 
   .history-detail-head {
     flex-direction: column;
+  }
+
+  .history-detail-actions {
+    width: 100%;
+    justify-content: flex-start;
   }
 
   .history-detail-grid {

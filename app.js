@@ -14,6 +14,7 @@ let patientSearchTerm = "";
 let patientPage = 1;
 let editingClientId = null;
 let editingPetId = null;
+let editingAppointmentId = null;
 const pageNames = new Set(["dashboard", "agenda", "cadastros", "pacientes", "usuarios"]);
 const petsPerPage = 15;
 
@@ -59,6 +60,7 @@ const els = {
 
 document.querySelector("#appointmentDate").value = selectedAgendaDate;
 document.querySelector("#appointmentTime").value = "10:00";
+document.querySelector("#appointmentProfessional").value = surgeonName;
 els.agendaDate.value = selectedAgendaDate;
 updateAgendaDateDisplay();
 renderAgendaCalendar();
@@ -66,9 +68,7 @@ renderAgendaCalendar();
 document.querySelector("#appointmentType").addEventListener("change", (event) => {
   const professionalInput = document.querySelector("#appointmentProfessional");
 
-  if (event.target.value === "Cirurgia") {
-    professionalInput.value = surgeonName;
-  }
+  professionalInput.value = surgeonName;
 });
 
 window.addEventListener("hashchange", () => {
@@ -112,10 +112,10 @@ els.clientForm.addEventListener("submit", async (event) => {
 
   const client = {
     id: crypto.randomUUID(),
-    name: valueOf("#clientName"),
+    name: normalizeName(valueOf("#clientName")),
     phone: valueOf("#clientPhone"),
     email: valueOf("#clientEmail"),
-    address: valueOf("#clientAddress")
+    address: normalizeText(valueOf("#clientAddress"))
   };
 
   await saveRecord("clients", client);
@@ -130,11 +130,11 @@ els.petForm.addEventListener("submit", async (event) => {
   const pet = {
     id: crypto.randomUUID(),
     ownerId: valueOf("#petOwner"),
-    name: valueOf("#petName"),
+    name: normalizeName(valueOf("#petName")),
     species: valueOf("#petSpecies"),
-    breed: valueOf("#petBreed"),
+    breed: normalizeName(valueOf("#petBreed")),
     age: valueOf("#petAge"),
-    notes: valueOf("#petNotes")
+    notes: normalizeText(valueOf("#petNotes"))
   };
 
   await saveRecord("pets", pet);
@@ -152,8 +152,8 @@ els.appointmentForm.addEventListener("submit", async (event) => {
     type: valueOf("#appointmentType"),
     date: valueOf("#appointmentDate"),
     time: valueOf("#appointmentTime"),
-    professional: valueOf("#appointmentProfessional") || defaultProfessional(valueOf("#appointmentType")),
-    notes: valueOf("#appointmentNotes"),
+    professional: normalizeName(valueOf("#appointmentProfessional") || defaultProfessional(valueOf("#appointmentType"))),
+    notes: normalizeText(valueOf("#appointmentNotes")),
     status: "agendado"
   };
 
@@ -166,6 +166,7 @@ els.appointmentForm.addEventListener("submit", async (event) => {
   renderAgendaCalendar();
   document.querySelector("#appointmentDate").value = selectedAgendaDate;
   document.querySelector("#appointmentTime").value = "10:00";
+  document.querySelector("#appointmentProfessional").value = surgeonName;
   await reloadAfterMutation();
   showToast("Atendimento marcado na agenda.");
 });
@@ -209,6 +210,16 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
+document.addEventListener("input", (event) => {
+  const field = event.target;
+
+  if (!field.matches("[data-capitalize], #clientName, #clientAddress, #petName, #petBreed, #petNotes, #appointmentProfessional, #appointmentNotes")) {
+    return;
+  }
+
+  capitalizeInputValue(field);
+});
+
 els.patientSearch.addEventListener("input", () => {
   patientSearchTerm = els.patientSearch.value.trim().toLowerCase();
   patientPage = 1;
@@ -236,14 +247,30 @@ els.appointmentsList.addEventListener("click", async (event) => {
 
   if (button.dataset.action === "cancel") {
     await updateAppointmentStatus(appointment.id, "cancelado");
+    editingAppointmentId = null;
     await reloadAfterMutation();
     showToast("Agendamento desmarcado.");
   }
 
   if (button.dataset.action === "reactivate") {
     await updateAppointmentStatus(appointment.id, "agendado");
+    editingAppointmentId = null;
     await reloadAfterMutation();
     showToast("Agendamento remarcado como ativo.");
+  }
+
+  if (button.dataset.action === "edit-appointment") {
+    editingAppointmentId = appointment.id;
+    renderAppointments();
+  }
+
+  if (button.dataset.action === "cancel-appointment-edit") {
+    editingAppointmentId = null;
+    renderAppointments();
+  }
+
+  if (button.dataset.action === "save-appointment") {
+    await saveAppointmentEdit(appointment.id);
   }
 });
 
@@ -310,6 +337,14 @@ els.petHistoryModal.addEventListener("click", (event) => {
   if (event.target === els.petHistoryModal) {
     closePetHistory();
   }
+});
+
+els.petHistoryDetails.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-action]");
+
+  if (!button || button.dataset.action !== "edit-history-appointment") return;
+
+  openAppointmentEdit(button.dataset.id);
 });
 
 els.logoutButton.addEventListener("click", async () => {
@@ -470,18 +505,20 @@ function renderAppointments() {
           <div>
             <h4 class="card-title">${escapeHtml(appointment.type)} - ${escapeHtml(pet?.name || "Pet removido")}</h4>
             <p class="card-meta">${formatDate(appointment.date)} às ${escapeHtml(appointment.time)} - ${escapeHtml(owner?.name || "Tutor não encontrado")}</p>
-            <p class="card-meta">${escapeHtml(appointment.professional || "Profissional a definir")}</p>
+            <p class="card-meta">${escapeHtml(displayAppointmentProfessional(appointment))}</p>
           </div>
           <span class="status ${appointment.status}">${formatAppointmentStatus(appointment.status)}</span>
         </div>
         ${appointment.notes ? `<p class="card-meta">${escapeHtml(appointment.notes)}</p>` : ""}
         <div class="card-actions">
+          <button class="ghost-button" type="button" data-action="edit-appointment" data-id="${appointment.id}">Editar</button>
           ${
             appointment.status === "agendado"
               ? `<button class="danger-button" type="button" data-action="cancel" data-id="${appointment.id}">Desmarcar</button>`
               : `<button class="ghost-button" type="button" data-action="reactivate" data-id="${appointment.id}">Reativar</button>`
           }
         </div>
+        ${editingAppointmentId === appointment.id ? renderAppointmentEditForm(appointment) : ""}
       </article>
     `;
   }).join("");
@@ -513,6 +550,34 @@ function renderDirectory() {
 
   els.directoryList.innerHTML = pagePets.map((pet) => renderPatientCard(pet)).join("");
   renderPatientPagination(totalPages);
+}
+
+function renderAppointmentEditForm(appointment) {
+  return `
+    <div class="edit-form appointment-edit-form" data-edit-appointment-id="${escapeHtml(appointment.id)}">
+      <label>Pet<select data-field="petId">
+        ${state.pets.map((pet) => {
+          const owner = findOwner(pet.ownerId);
+          return `<option value="${pet.id}" ${pet.id === appointment.petId ? "selected" : ""}>${escapeHtml(pet.name)} - ${escapeHtml(owner?.name || "Sem tutor")}</option>`;
+        }).join("")}
+      </select></label>
+      <label>Serviço<select data-field="type">
+        ${["Banho e tosa", "Consulta", "Vacina", "Cirurgia"].map((type) => `<option value="${type}" ${type === appointment.type ? "selected" : ""}>${type}</option>`).join("")}
+      </select></label>
+      <label>Data<input data-field="date" type="date" value="${escapeHtml(appointment.date)}" /></label>
+      <label>Horário<input data-field="time" type="time" value="${escapeHtml(appointment.time)}" /></label>
+      <label>Profissional<input data-field="professional" data-capitalize="name" value="${escapeHtml(displayAppointmentProfessional(appointment))}" /></label>
+      <label>Status<select data-field="status">
+        <option value="agendado" ${appointment.status === "agendado" ? "selected" : ""}>Agendado</option>
+        <option value="cancelado" ${appointment.status === "cancelado" ? "selected" : ""}>Desmarcado</option>
+      </select></label>
+      <label class="edit-wide">Observações<textarea data-field="notes" data-capitalize rows="3">${escapeHtml(appointment.notes)}</textarea></label>
+      <div class="card-actions">
+        <button class="primary-button" type="button" data-action="save-appointment" data-id="${appointment.id}">Salvar atendimento</button>
+        <button class="ghost-button" type="button" data-action="cancel-appointment-edit" data-id="${appointment.id}">Cancelar</button>
+      </div>
+    </div>
+  `;
 }
 
 function getFilteredPets() {
@@ -583,10 +648,10 @@ function renderPatientCard(pet) {
 function renderClientEditForm(client) {
   return `
     <div class="edit-form" data-edit-client-id="${escapeHtml(client.id)}">
-      <label>Nome<input data-field="name" value="${escapeHtml(client.name)}" /></label>
+      <label>Nome<input data-field="name" data-capitalize="name" value="${escapeHtml(client.name)}" /></label>
       <label>Telefone<input data-field="phone" value="${escapeHtml(client.phone)}" /></label>
       <label>E-mail<input data-field="email" value="${escapeHtml(client.email)}" /></label>
-      <label>Endereço<input data-field="address" value="${escapeHtml(client.address)}" /></label>
+      <label>Endereço<input data-field="address" data-capitalize value="${escapeHtml(client.address)}" /></label>
       <div class="card-actions">
         <button class="primary-button" type="button" data-action="save-client" data-client-id="${client.id}">Salvar tutor</button>
         <button class="ghost-button" type="button" data-action="cancel-client" data-client-id="${client.id}">Cancelar</button>
@@ -601,13 +666,13 @@ function renderPetEditForm(pet) {
       <label>Tutor<select data-field="ownerId">${state.clients.map((client) => `
         <option value="${client.id}" ${client.id === pet.ownerId ? "selected" : ""}>${escapeHtml(client.name)}</option>
       `).join("")}</select></label>
-      <label>Nome<input data-field="name" value="${escapeHtml(pet.name)}" /></label>
+      <label>Nome<input data-field="name" data-capitalize="name" value="${escapeHtml(pet.name)}" /></label>
       <label>Espécie<select data-field="species">
         ${["Cão", "Gato", "Ave", "Outro"].map((species) => `<option value="${species}" ${species === pet.species ? "selected" : ""}>${species}</option>`).join("")}
       </select></label>
-      <label>Raça<input data-field="breed" value="${escapeHtml(pet.breed)}" /></label>
+      <label>Raça<input data-field="breed" data-capitalize="name" value="${escapeHtml(pet.breed)}" /></label>
       <label>Idade<input data-field="age" type="number" min="0" max="80" value="${escapeHtml(pet.age)}" /></label>
-      <label class="edit-wide">Observações<textarea data-field="notes" rows="3">${escapeHtml(pet.notes)}</textarea></label>
+      <label class="edit-wide">Observações<textarea data-field="notes" data-capitalize rows="3">${escapeHtml(pet.notes)}</textarea></label>
       <div class="card-actions">
         <button class="primary-button" type="button" data-action="save-pet" data-pet-id="${pet.id}">Salvar pet</button>
         <button class="ghost-button" type="button" data-action="cancel-pet" data-pet-id="${pet.id}">Cancelar</button>
@@ -695,6 +760,21 @@ function closePetHistory() {
   document.body.classList.remove("modal-open");
 }
 
+function openAppointmentEdit(appointmentId) {
+  const appointment = state.appointments.find((item) => item.id === appointmentId);
+
+  if (!appointment) return;
+
+  closePetHistory();
+  selectedAgendaDate = appointment.date;
+  editingAppointmentId = appointment.id;
+  calendarViewDate = parseLocalDate(selectedAgendaDate);
+  updateAgendaDateDisplay();
+  renderAgendaCalendar();
+  openPage("agenda", true);
+  renderAppointments();
+}
+
 function renderPetHistoryDetail(appointment) {
   return `
     <article class="history-detail-card">
@@ -703,7 +783,10 @@ function renderPetHistoryDetail(appointment) {
           <p class="eyebrow">${formatDate(appointment.date)} às ${escapeHtml(appointment.time)}</p>
           <h3>${escapeHtml(appointment.type)}</h3>
         </div>
-        <span class="status ${appointment.status}">${formatAppointmentStatus(appointment.status)}</span>
+        <div class="history-detail-actions">
+          <span class="status ${appointment.status}">${formatAppointmentStatus(appointment.status)}</span>
+          <button class="ghost-button" type="button" data-action="edit-history-appointment" data-id="${appointment.id}">Editar</button>
+        </div>
       </div>
       <dl class="history-detail-grid">
         <div>
@@ -712,7 +795,7 @@ function renderPetHistoryDetail(appointment) {
         </div>
         <div>
           <dt>Profissional</dt>
-          <dd>${escapeHtml(appointment.professional || "Profissional a definir")}</dd>
+          <dd>${escapeHtml(displayAppointmentProfessional(appointment))}</dd>
         </div>
         <div class="history-detail-wide">
           <dt>Observações</dt>
@@ -743,6 +826,8 @@ function renderDashboard() {
 async function saveClientEdit(clientId) {
   const form = document.querySelector(`[data-edit-client-id="${cssEscape(clientId)}"]`);
   const payload = readEditFields(form, ["name", "phone", "email", "address"]);
+  payload.name = normalizeName(payload.name);
+  payload.address = normalizeText(payload.address);
 
   await updateRecord("clients", clientId, payload);
   editingClientId = null;
@@ -765,6 +850,9 @@ async function deleteClient(clientId) {
 async function savePetEdit(petId) {
   const form = document.querySelector(`[data-edit-pet-id="${cssEscape(petId)}"]`);
   const payload = readEditFields(form, ["ownerId", "name", "species", "breed", "age", "notes"]);
+  payload.name = normalizeName(payload.name);
+  payload.breed = normalizeName(payload.breed);
+  payload.notes = normalizeText(payload.notes);
 
   await updateRecord("pets", petId, payload);
   editingPetId = null;
@@ -781,6 +869,22 @@ async function deletePet(petId) {
   editingPetId = null;
   await reloadAfterMutation();
   showToast("Pet excluído.");
+}
+
+async function saveAppointmentEdit(appointmentId) {
+  const form = document.querySelector(`[data-edit-appointment-id="${cssEscape(appointmentId)}"]`);
+  const payload = readEditFields(form, ["petId", "type", "date", "time", "professional", "notes", "status"]);
+  payload.professional = normalizeName(payload.professional || surgeonName);
+  payload.notes = normalizeText(payload.notes);
+
+  await updateRecord("appointments", appointmentId, payload);
+  editingAppointmentId = null;
+  selectedAgendaDate = payload.date;
+  calendarViewDate = parseLocalDate(selectedAgendaDate);
+  updateAgendaDateDisplay();
+  renderAgendaCalendar();
+  await reloadAfterMutation();
+  showToast("Atendimento atualizado.");
 }
 
 function readEditFields(container, fields) {
@@ -815,6 +919,28 @@ function setFormsDisabled(disabled) {
 
 function valueOf(selector) {
   return document.querySelector(selector).value.trim();
+}
+
+function normalizeText(value) {
+  return String(value || "").replace(/^(\s*)(\p{L})/u, (_, spacing, letter) => spacing + letter.toLocaleUpperCase("pt-BR"));
+}
+
+function normalizeName(value) {
+  return String(value || "").replace(/(^|\s)(\p{L})/gu, (_, spacing, letter) => spacing + letter.toLocaleUpperCase("pt-BR"));
+}
+
+function capitalizeInputValue(field) {
+  const start = field.selectionStart;
+  const end = field.selectionEnd;
+  const nextValue = field.dataset.capitalize === "name" ? normalizeName(field.value) : normalizeText(field.value);
+
+  if (field.value !== nextValue) {
+    field.value = nextValue;
+
+    if (typeof start === "number" && typeof end === "number") {
+      field.setSelectionRange(start, end);
+    }
+  }
 }
 
 function findOwner(ownerId) {
@@ -895,7 +1021,17 @@ function renderAgendaCalendar() {
 }
 
 function defaultProfessional(type) {
-  return type === "Cirurgia" ? surgeonName : "";
+  return surgeonName;
+}
+
+function displayAppointmentProfessional(appointment) {
+  const professional = String(appointment.professional || "").trim();
+
+  if (!professional || professional.toLocaleLowerCase("pt-BR") === "luiz") {
+    return surgeonName;
+  }
+
+  return professional;
 }
 
 function formatAppointmentStatus(status) {

@@ -4,11 +4,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Clínica AltaVet</title>
-    <link rel="icon" type="image/png" href="/assets/favicon.png?v=20260717-logo" />
+    <link rel="icon" type="image/png" href="/assets/favicon.png?v=20260720-appointments-edit" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/styles.css?v=20260717-logo" />
+    <link rel="stylesheet" href="/styles.css?v=20260720-appointments-edit" />
   </head>
   <body>
     <header class="topbar">
@@ -120,13 +120,13 @@
                 </label>
                 <label>
                   Profissional
-                  <input id="appointmentProfessional" type="text" placeholder="Luiz Wagner Krieger Amorim" />
+                <input id="appointmentProfessional" type="text" value="Luiz Wagner Krieger Amorim" data-capitalize="name" placeholder="Luiz Wagner Krieger Amorim" />
                 </label>
               </div>
 
               <label>
                 Observações
-                <textarea id="appointmentNotes" rows="3" placeholder="Ex.: vacina V10, retorno pós-cirúrgico, tosa higiênica"></textarea>
+                <textarea id="appointmentNotes" rows="3" data-capitalize placeholder="Ex.: vacina V10, retorno pós-cirúrgico, tosa higiênica"></textarea>
               </label>
 
               <button class="primary-button" type="submit">Marcar atendimento</button>
@@ -145,9 +145,9 @@
                     <input id="agendaDate" type="hidden" />
                     <div class="date-popover" id="agendaDatePopover" hidden>
                       <div class="date-popover-head">
-                        <button type="button" class="date-nav-button" data-calendar-nav="prev" aria-label="MÃªs anterior">‹</button>
+                        <button type="button" class="date-nav-button" data-calendar-nav="prev" aria-label="Mês anterior">‹</button>
                         <strong id="agendaCalendarMonth"></strong>
-                        <button type="button" class="date-nav-button" data-calendar-nav="next" aria-label="PrÃ³ximo mÃªs">›</button>
+                        <button type="button" class="date-nav-button" data-calendar-nav="next" aria-label="Próximo mês">›</button>
                       </div>
                       <div class="date-weekdays" aria-hidden="true">
                         <span>Dom</span>
@@ -156,7 +156,7 @@
                         <span>Qua</span>
                         <span>Qui</span>
                         <span>Sex</span>
-                        <span>SÃ¡b</span>
+                        <span>Sáb</span>
                       </div>
                       <div class="date-days" id="agendaCalendarDays"></div>
                     </div>
@@ -189,7 +189,7 @@
 
               <label>
                 Nome do tutor
-                <input id="clientName" type="text" required placeholder="Nome completo" />
+                <input id="clientName" type="text" required data-capitalize="name" placeholder="Nome completo" />
               </label>
 
               <div class="field-row">
@@ -205,7 +205,7 @@
 
               <label>
                 Endereço
-                <input id="clientAddress" type="text" placeholder="Rua, número, bairro" />
+                <input id="clientAddress" type="text" data-capitalize placeholder="Rua, número, bairro" />
               </label>
 
               <button class="primary-button" type="submit">Salvar cliente</button>
@@ -225,7 +225,7 @@
               <div class="field-row">
                 <label>
                   Nome do pet
-                  <input id="petName" type="text" required placeholder="Nome" />
+                  <input id="petName" type="text" required data-capitalize="name" placeholder="Nome" />
                 </label>
                 <label>
                   Espécie
@@ -241,7 +241,7 @@
               <div class="field-row">
                 <label>
                   Raça
-                  <input id="petBreed" type="text" placeholder="SRD, Poodle, Persa..." />
+                  <input id="petBreed" type="text" data-capitalize="name" placeholder="SRD, Poodle, Persa..." />
                 </label>
                 <label>
                   Idade
@@ -251,7 +251,7 @@
 
               <label>
                 Observações clínicas
-                <textarea id="petNotes" rows="3" placeholder="Alergias, medicações, comportamento"></textarea>
+                <textarea id="petNotes" rows="3" data-capitalize placeholder="Alergias, medicações, comportamento"></textarea>
               </label>
 
               <button class="primary-button" type="submit">Salvar pet</button>
@@ -335,6 +335,6 @@
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-    <script src="/app.js?v=20260717-logo"></script>
+    <script src="/app.js?v=20260720-appointments-edit"></script>
   </body>
 </html>

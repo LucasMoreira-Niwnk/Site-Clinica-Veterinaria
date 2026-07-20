@@ -417,6 +417,39 @@ def update_appointment_status(appointment_id: str, payload: dict) -> None:
         touch_updated_at(db)
 
 
+def update_appointment(appointment_id: str, payload: dict) -> None:
+    require_fields(payload, ("petId", "type", "date", "time"))
+    status = payload.get("status", "agendado")
+
+    if status not in {"agendado", "cancelado"}:
+        raise ValueError("Status invalido")
+
+    with connect() as db:
+        cursor = db.execute(
+            """
+            UPDATE appointments
+            SET pet_id = ?, type = ?, date = ?, time = ?, professional = ?, notes = ?, status = ?, updated_at = ?
+            WHERE id = ?
+            """,
+            (
+                payload["petId"],
+                payload["type"].strip(),
+                payload["date"].strip(),
+                payload["time"].strip(),
+                payload.get("professional", "").strip(),
+                payload.get("notes", "").strip(),
+                status,
+                utc_now(),
+                appointment_id,
+            ),
+        )
+
+        if cursor.rowcount == 0:
+            raise KeyError("Agendamento nao encontrado")
+
+        touch_updated_at(db)
+
+
 def hash_password(password: str, salt: str | None = None) -> str:
     salt = salt or secrets.token_hex(16)
     digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), bytes.fromhex(salt), 260_000)
@@ -710,6 +743,11 @@ class AltaVetHandler(BaseHTTPRequestHandler):
 
             if len(parts) == 3 and parts[:2] == ["api", "pets"]:
                 update_pet(unquote(parts[2]), payload)
+                self.send_json(get_state())
+                return
+
+            if len(parts) == 3 and parts[:2] == ["api", "appointments"]:
+                update_appointment(unquote(parts[2]), payload)
                 self.send_json(get_state())
                 return
 
