@@ -4,11 +4,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Clínica AltaVet</title>
-    <link rel="icon" type="image/png" href="/assets/favicon.png?v=20260720-custom-pickers" />
+    <link rel="icon" type="image/png" href="/assets/favicon.png?v=20260720-custom-date-picker" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/styles.css?v=20260720-custom-pickers" />
+    <link rel="stylesheet" href="/styles.css?v=20260720-custom-date-picker" />
   </head>
   <body>
     <header class="topbar">
@@ -110,7 +110,8 @@
                 </label>
                 <label>
                   Data
-                  <input id="appointmentDate" type="date" required />
+                  <input id="appointmentDate" class="native-control-hidden" type="date" required />
+                  <div class="custom-picker" data-picker="date" data-target="appointmentDate"></div>
                 </label>
               </div>
 
@@ -337,6 +338,6 @@
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-    <script src="/app.js?v=20260720-custom-pickers"></script>
+    <script src="/app.js?v=20260720-custom-date-picker"></script>
   </body>
 </html>

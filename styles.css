@@ -748,6 +748,11 @@ textarea {
   gap: 8px;
 }
 
+.date-picker-popover {
+  width: 292px;
+  gap: 0;
+}
+
 .time-column {
   display: grid;
   max-height: 226px;

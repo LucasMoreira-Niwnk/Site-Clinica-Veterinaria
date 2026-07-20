@@ -20,6 +20,7 @@ const petsPerPage = 15;
 const serviceOptions = ["Banho e tosa", "Consulta", "Vacina", "Cirurgia"];
 const appointmentHours = Array.from({ length: 14 }, (_, index) => String(index + 7).padStart(2, "0"));
 const appointmentMinutes = ["00", "15", "30", "45"];
+const datePickerViewDates = {};
 
 const els = {
   userForm: document.querySelector("#userForm"),
@@ -222,6 +223,8 @@ document.addEventListener("click", (event) => {
   const trigger = event.target.closest("[data-picker-trigger]");
   const serviceOption = event.target.closest("[data-service-value]");
   const timePart = event.target.closest("[data-time-part]");
+  const dateNav = event.target.closest("[data-picker-date-nav]");
+  const dateOption = event.target.closest("[data-picker-date-value]");
 
   if (trigger) {
     const picker = trigger.closest(".custom-picker");
@@ -251,6 +254,29 @@ document.addEventListener("click", (event) => {
     field.value = `${hour}:${minute}`;
     field.dispatchEvent(new Event("change", { bubbles: true }));
     renderCustomPickers();
+    return;
+  }
+
+  if (dateNav) {
+    const picker = dateNav.closest(".custom-picker");
+    const field = document.querySelector(`#${picker.dataset.target}`);
+    const viewDate = datePickerViewDates[field.id] || parseLocalDate(field.value || getOffsetDate(0));
+    viewDate.setMonth(viewDate.getMonth() + (dateNav.dataset.pickerDateNav === "next" ? 1 : -1));
+    datePickerViewDates[field.id] = viewDate;
+    renderCustomPickers();
+    picker.classList.add("is-open");
+    picker.querySelector("[data-picker-trigger]")?.setAttribute("aria-expanded", "true");
+    return;
+  }
+
+  if (dateOption) {
+    const picker = dateOption.closest(".custom-picker");
+    const field = document.querySelector(`#${picker.dataset.target}`);
+    field.value = dateOption.dataset.pickerDateValue;
+    datePickerViewDates[field.id] = parseLocalDate(field.value);
+    field.dispatchEvent(new Event("change", { bubbles: true }));
+    renderCustomPickers();
+    closeCustomPickers();
   }
 });
 
@@ -610,7 +636,7 @@ function renderAppointmentEditForm(appointment) {
       <label>Serviço<select id="appointmentType-${escapeHtml(appointment.id)}" class="native-control-hidden" data-field="type" data-service-select>
         ${serviceOptions.map((type) => `<option value="${type}" ${type === appointment.type ? "selected" : ""}>${type}</option>`).join("")}
       </select><div class="custom-picker" data-picker="service" data-target="appointmentType-${escapeHtml(appointment.id)}"></div></label>
-      <label>Data<input data-field="date" type="date" value="${escapeHtml(appointment.date)}" /></label>
+      <label>Data<input id="appointmentDate-${escapeHtml(appointment.id)}" class="native-control-hidden" data-field="date" type="date" value="${escapeHtml(appointment.date)}" /><div class="custom-picker" data-picker="date" data-target="appointmentDate-${escapeHtml(appointment.id)}"></div></label>
       <label>Horário<input id="appointmentTime-${escapeHtml(appointment.id)}" class="native-control-hidden" data-field="time" type="time" value="${escapeHtml(appointment.time)}" /><div class="custom-picker" data-picker="time" data-target="appointmentTime-${escapeHtml(appointment.id)}"></div></label>
       <label>Profissional<input data-field="professional" data-capitalize="name" value="${escapeHtml(displayAppointmentProfessional(appointment))}" /></label>
       <label>Status<select data-field="status">
@@ -1086,6 +1112,10 @@ function renderCustomPickers() {
     if (picker.dataset.picker === "time") {
       renderTimePicker(picker, field);
     }
+
+    if (picker.dataset.picker === "date") {
+      renderDatePicker(picker, field);
+    }
   });
 }
 
@@ -1126,6 +1156,56 @@ function renderTimePicker(picker, field) {
         ${minutes.map((option) => `
           <button class="time-option ${option === minute ? "is-selected" : ""}" type="button" data-time-part="minute" data-time-value="${option}">${option}</button>
         `).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function renderDatePicker(picker, field) {
+  const value = field.value || getOffsetDate(0);
+  const viewDate = datePickerViewDates[field.id] || parseLocalDate(value);
+  const year = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const start = new Date(year, month, 1 - firstDay.getDay());
+  const todayValue = getOffsetDate(0);
+
+  datePickerViewDates[field.id] = viewDate;
+
+  picker.innerHTML = `
+    <button class="picker-trigger" type="button" data-picker-trigger aria-haspopup="dialog" aria-expanded="false">
+      <span>${formatDate(value)}</span>
+      <span class="date-trigger-icon" aria-hidden="true"></span>
+    </button>
+    <div class="picker-popover date-picker-popover">
+      <div class="date-popover-head">
+        <button type="button" class="date-nav-button" data-picker-date-nav="prev" aria-label="Mês anterior">‹</button>
+        <strong>${firstDay.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}</strong>
+        <button type="button" class="date-nav-button" data-picker-date-nav="next" aria-label="Próximo mês">›</button>
+      </div>
+      <div class="date-weekdays" aria-hidden="true">
+        <span>Dom</span>
+        <span>Seg</span>
+        <span>Ter</span>
+        <span>Qua</span>
+        <span>Qui</span>
+        <span>Sex</span>
+        <span>Sáb</span>
+      </div>
+      <div class="date-days">
+        ${Array.from({ length: 42 }, (_, index) => {
+          const date = new Date(start);
+          date.setDate(start.getDate() + index);
+          const dateValue = toDateValue(date);
+          const classes = [
+            "date-day",
+            date.getMonth() !== month ? "is-muted" : "",
+            dateValue === todayValue ? "is-today" : "",
+            dateValue === value ? "is-selected" : ""
+          ].filter(Boolean).join(" ");
+
+          return `<button class="${classes}" type="button" data-picker-date-value="${dateValue}">${date.getDate()}</button>`;
+        }).join("")}
       </div>
     </div>
   `;
