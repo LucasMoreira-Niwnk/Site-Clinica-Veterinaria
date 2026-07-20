@@ -4,11 +4,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Clínica AltaVet</title>
-    <link rel="icon" type="image/png" href="/assets/favicon.png?v=20260720-appointments-edit" />
+    <link rel="icon" type="image/png" href="/assets/favicon.png?v=20260720-custom-pickers" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/styles.css?v=20260720-appointments-edit" />
+    <link rel="stylesheet" href="/styles.css?v=20260720-custom-pickers" />
   </head>
   <body>
     <header class="topbar">
@@ -100,12 +100,13 @@
               <div class="field-row">
                 <label>
                   Serviço
-                  <select id="appointmentType" required>
+                  <select id="appointmentType" class="native-control-hidden" data-service-select required>
                     <option value="Banho e tosa">Banho e tosa</option>
                     <option value="Consulta">Consulta</option>
                     <option value="Vacina">Vacina</option>
                     <option value="Cirurgia">Cirurgia</option>
                   </select>
+                  <div class="custom-picker" data-picker="service" data-target="appointmentType"></div>
                 </label>
                 <label>
                   Data
@@ -116,7 +117,8 @@
               <div class="field-row">
                 <label>
                   Horário
-                  <input id="appointmentTime" type="time" required />
+                  <input id="appointmentTime" class="native-control-hidden" type="time" required />
+                  <div class="custom-picker" data-picker="time" data-target="appointmentTime"></div>
                 </label>
                 <label>
                   Profissional
@@ -335,6 +337,6 @@
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-    <script src="/app.js?v=20260720-appointments-edit"></script>
+    <script src="/app.js?v=20260720-custom-pickers"></script>
   </body>
 </html>

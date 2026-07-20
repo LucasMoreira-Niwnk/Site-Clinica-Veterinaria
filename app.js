@@ -17,6 +17,9 @@ let editingPetId = null;
 let editingAppointmentId = null;
 const pageNames = new Set(["dashboard", "agenda", "cadastros", "pacientes", "usuarios"]);
 const petsPerPage = 15;
+const serviceOptions = ["Banho e tosa", "Consulta", "Vacina", "Cirurgia"];
+const appointmentHours = Array.from({ length: 14 }, (_, index) => String(index + 7).padStart(2, "0"));
+const appointmentMinutes = ["00", "15", "30", "45"];
 
 const els = {
   userForm: document.querySelector("#userForm"),
@@ -64,6 +67,7 @@ document.querySelector("#appointmentProfessional").value = surgeonName;
 els.agendaDate.value = selectedAgendaDate;
 updateAgendaDateDisplay();
 renderAgendaCalendar();
+renderCustomPickers();
 
 document.querySelector("#appointmentType").addEventListener("change", (event) => {
   const professionalInput = document.querySelector("#appointmentProfessional");
@@ -201,12 +205,52 @@ document.addEventListener("click", (event) => {
   if (!els.agendaDatePicker.contains(event.target)) {
     toggleAgendaCalendar(false);
   }
+
+  if (!event.target.closest(".custom-picker")) {
+    closeCustomPickers();
+  }
 });
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     toggleAgendaCalendar(false);
     closePetHistory();
+  }
+});
+
+document.addEventListener("click", (event) => {
+  const trigger = event.target.closest("[data-picker-trigger]");
+  const serviceOption = event.target.closest("[data-service-value]");
+  const timePart = event.target.closest("[data-time-part]");
+
+  if (trigger) {
+    const picker = trigger.closest(".custom-picker");
+    const shouldOpen = !picker.classList.contains("is-open");
+    closeCustomPickers();
+    picker.classList.toggle("is-open", shouldOpen);
+    trigger.setAttribute("aria-expanded", String(shouldOpen));
+    return;
+  }
+
+  if (serviceOption) {
+    const picker = serviceOption.closest(".custom-picker");
+    const field = document.querySelector(`#${picker.dataset.target}`);
+    field.value = serviceOption.dataset.serviceValue;
+    field.dispatchEvent(new Event("change", { bubbles: true }));
+    renderCustomPickers();
+    closeCustomPickers();
+    return;
+  }
+
+  if (timePart) {
+    const picker = timePart.closest(".custom-picker");
+    const field = document.querySelector(`#${picker.dataset.target}`);
+    const [currentHour = "10", currentMinute = "00"] = (field.value || "10:00").split(":");
+    const hour = timePart.dataset.timePart === "hour" ? timePart.dataset.timeValue : currentHour;
+    const minute = timePart.dataset.timePart === "minute" ? timePart.dataset.timeValue : currentMinute;
+    field.value = `${hour}:${minute}`;
+    field.dispatchEvent(new Event("change", { bubbles: true }));
+    renderCustomPickers();
   }
 });
 
@@ -442,6 +486,7 @@ function render() {
   renderUsers();
   renderTotals();
   renderDashboard();
+  renderCustomPickers();
 }
 
 function openPage(page, updateHash = false) {
@@ -522,6 +567,7 @@ function renderAppointments() {
       </article>
     `;
   }).join("");
+  renderCustomPickers();
 }
 
 function renderDirectory() {
@@ -561,11 +607,11 @@ function renderAppointmentEditForm(appointment) {
           return `<option value="${pet.id}" ${pet.id === appointment.petId ? "selected" : ""}>${escapeHtml(pet.name)} - ${escapeHtml(owner?.name || "Sem tutor")}</option>`;
         }).join("")}
       </select></label>
-      <label>Serviço<select data-field="type">
-        ${["Banho e tosa", "Consulta", "Vacina", "Cirurgia"].map((type) => `<option value="${type}" ${type === appointment.type ? "selected" : ""}>${type}</option>`).join("")}
-      </select></label>
+      <label>Serviço<select id="appointmentType-${escapeHtml(appointment.id)}" class="native-control-hidden" data-field="type" data-service-select>
+        ${serviceOptions.map((type) => `<option value="${type}" ${type === appointment.type ? "selected" : ""}>${type}</option>`).join("")}
+      </select><div class="custom-picker" data-picker="service" data-target="appointmentType-${escapeHtml(appointment.id)}"></div></label>
       <label>Data<input data-field="date" type="date" value="${escapeHtml(appointment.date)}" /></label>
-      <label>Horário<input data-field="time" type="time" value="${escapeHtml(appointment.time)}" /></label>
+      <label>Horário<input id="appointmentTime-${escapeHtml(appointment.id)}" class="native-control-hidden" data-field="time" type="time" value="${escapeHtml(appointment.time)}" /><div class="custom-picker" data-picker="time" data-target="appointmentTime-${escapeHtml(appointment.id)}"></div></label>
       <label>Profissional<input data-field="professional" data-capitalize="name" value="${escapeHtml(displayAppointmentProfessional(appointment))}" /></label>
       <label>Status<select data-field="status">
         <option value="agendado" ${appointment.status === "agendado" ? "selected" : ""}>Agendado</option>
@@ -1018,6 +1064,71 @@ function renderAgendaCalendar() {
 
     return `<button class="${classes}" type="button" data-date-value="${value}">${date.getDate()}</button>`;
   }).join("");
+}
+
+function closeCustomPickers() {
+  document.querySelectorAll(".custom-picker.is-open").forEach((picker) => {
+    picker.classList.remove("is-open");
+    picker.querySelector("[data-picker-trigger]")?.setAttribute("aria-expanded", "false");
+  });
+}
+
+function renderCustomPickers() {
+  document.querySelectorAll(".custom-picker").forEach((picker) => {
+    const field = document.getElementById(picker.dataset.target);
+
+    if (!field) return;
+
+    if (picker.dataset.picker === "service") {
+      renderServicePicker(picker, field);
+    }
+
+    if (picker.dataset.picker === "time") {
+      renderTimePicker(picker, field);
+    }
+  });
+}
+
+function renderServicePicker(picker, field) {
+  const value = field.value || serviceOptions[0];
+
+  picker.innerHTML = `
+    <button class="picker-trigger" type="button" data-picker-trigger aria-haspopup="listbox" aria-expanded="false">
+      <span>${escapeHtml(value)}</span>
+      <span class="picker-chevron" aria-hidden="true"></span>
+    </button>
+    <div class="picker-popover service-popover" role="listbox">
+      ${serviceOptions.map((option) => `
+        <button class="picker-option ${option === value ? "is-selected" : ""}" type="button" data-service-value="${escapeHtml(option)}" role="option" aria-selected="${option === value}">
+          ${escapeHtml(option)}
+        </button>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderTimePicker(picker, field) {
+  const [hour = "10", minute = "00"] = (field.value || "10:00").split(":");
+  const minutes = appointmentMinutes.includes(minute) ? appointmentMinutes : [...appointmentMinutes, minute].sort();
+
+  picker.innerHTML = `
+    <button class="picker-trigger" type="button" data-picker-trigger aria-haspopup="dialog" aria-expanded="false">
+      <span>${escapeHtml(hour)}:${escapeHtml(minute)}</span>
+      <span class="time-trigger-icon" aria-hidden="true"></span>
+    </button>
+    <div class="picker-popover time-popover">
+      <div class="time-column" aria-label="Hora">
+        ${appointmentHours.map((option) => `
+          <button class="time-option ${option === hour ? "is-selected" : ""}" type="button" data-time-part="hour" data-time-value="${option}">${option}</button>
+        `).join("")}
+      </div>
+      <div class="time-column" aria-label="Minuto">
+        ${minutes.map((option) => `
+          <button class="time-option ${option === minute ? "is-selected" : ""}" type="button" data-time-part="minute" data-time-value="${option}">${option}</button>
+        `).join("")}
+      </div>
+    </div>
+  `;
 }
 
 function defaultProfessional(type) {
